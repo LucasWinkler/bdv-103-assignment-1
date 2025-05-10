@@ -1,31 +1,34 @@
 import books from './../mcmasteful-book-list.json';
 
 export interface Book {
-    name: string,
-    author: string,
-    description: string,
-    price: number,
-    image: string,
-};
-
-// If you have multiple filters, a book matching any of them is a match.
-async function listBooks(filters?: Array<{from?: number, to?: number}>) : Promise<Book[]>{
-    // if (!filters || filters.length === 0) {
-    //     return books; // No filters, return all books
-    // }
-    // console.log("running listBooks")
-    // return books.filter(book =>
-    //     filters.some(filter =>
-    //         (filter.from === undefined || book.price >= filter.from) &&
-    //         (filter.to === undefined || book.price <= filter.to)
-    //     )
-    // );
-    throw new Error("Todo")
+  name: string;
+  author: string;
+  description: string;
+  price: number;
+  image: string;
 }
 
-const assignment = "assignment-1";
+// If you have multiple filters, a book matching any of them is a match.
+async function listBooks(
+  filters?: Array<{ from?: number; to?: number }>
+): Promise<Book[]> {
+  console.log('filters', filters);
+  if (!filters || filters.length === 0) {
+    return books; // No filters, return all books
+  }
+  console.log('running listBooks');
+  return books.filter(book =>
+    filters.some(
+      filter =>
+        (filter.from === undefined || book.price >= filter.from) &&
+        (filter.to === undefined || book.price <= filter.to)
+    )
+  );
+}
+
+const assignment = 'assignment-1';
 
 export default {
-    assignment,
-    listBooks
+  assignment,
+  listBooks,
 };
