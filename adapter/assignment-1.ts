@@ -1,12 +1,15 @@
+import z from 'zod';
 import books from './../mcmasteful-book-list.json';
 
-export interface Book {
-  name: string;
-  author: string;
-  description: string;
-  price: number;
-  image: string;
-}
+export const bookSchema = z.object({
+  name: z.string(),
+  author: z.string(),
+  description: z.string(),
+  price: z.number(),
+  image: z.string(),
+});
+
+export type Book = z.infer<typeof bookSchema>;
 
 // If you have multiple filters, a book matching any of them is a match.
 async function listBooks(
