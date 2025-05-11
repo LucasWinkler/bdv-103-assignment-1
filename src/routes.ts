@@ -14,6 +14,17 @@ const filterSchema = z
   )
   .optional();
 
+const querySchema = z.object({
+  filters: filterSchema,
+});
+
+const responseSchema = z.union([
+  z.array(bookSchema),
+  z.object({
+    error: z.string(),
+  }),
+]);
+
 const router = zodRouter({
   zodRouter: {
     exposeRequestErrors: true,
@@ -38,13 +49,18 @@ const router = zodRouter({
 router.get(
   '/books',
   async ctx => {
-    const { filters } = ctx.request.query;
-    const books = await adapter.listBooks(filters);
-    ctx.body = books;
+    try {
+      const { filters } = ctx.request.query;
+      const books = await adapter.listBooks(filters);
+      ctx.body = books;
+    } catch (error) {
+      ctx.status = 500;
+      ctx.body = { error: `Failed to fetch books due to: ${error}` };
+    }
   },
   {
-    query: z.object({ filters: filterSchema }),
-    response: z.array(bookSchema),
+    query: querySchema,
+    response: responseSchema,
   }
 );
 
