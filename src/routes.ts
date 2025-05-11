@@ -1,47 +1,51 @@
-import Router from 'koa-router';
+import zodRouter from 'koa-zod-router';
+import { z } from 'zod';
 import adapter from '../adapter';
+import { bookSchema } from '../adapter/assignment-1';
 
-const router = new Router();
+const filterSchema = z
+  .array(
+    z
+      .object({
+        from: z.coerce.number().optional(),
+        to: z.coerce.number().optional(),
+      })
+      .strict()
+  )
+  .optional();
 
-router.get('/books', async ctx => {
-  const filters = ctx.query.filters as Array<{ from?: number; to?: number }>;
-
-  try {
-    // If filters exist and are invalid, return 400
-    if (filters && !validateFilters(filters)) {
-      ctx.status = 400;
-      ctx.body = { error: 'Failed to fetch books due to invalid filters' };
-      return;
-    }
-
-    // If filters exist and are valid, fetch books
-    const books = await adapter.listBooks(filters);
-    ctx.body = books;
-  } catch (error) {
-    ctx.status = 500;
-    ctx.body = { error: `Failed to fetch books due to: ${error}` };
-  }
+const router = zodRouter({
+  zodRouter: {
+    exposeRequestErrors: true,
+    exposeResponseErrors: true,
+    validationErrorHandler: async (ctx, next) => {
+      if (ctx.invalid.error) {
+        ctx.status = 422;
+        ctx.body = {
+          message: 'Validation failed',
+          errors: ctx.invalid.query?.issues.map(issue => ({
+            field: issue.path.join('.'),
+            message: issue.message,
+          })),
+        };
+      } else {
+        await next();
+      }
+    },
+  },
 });
 
-function validateFilters(filters: any): boolean {
-  // Check if filters exist and are an array
-  if (!filters || !Array.isArray(filters)) {
-    return false;
+router.get(
+  '/books',
+  async ctx => {
+    const { filters } = ctx.request.query;
+    const books = await adapter.listBooks(filters);
+    ctx.body = books;
+  },
+  {
+    query: z.object({ filters: filterSchema }),
+    response: z.array(bookSchema),
   }
-
-  // Check each filter object in the array
-  return filters.every(filter => {
-    const from = parseFloat(filter.from);
-    const to = parseFloat(filter.to);
-
-    // Validate that 'from' and 'to' are numbers
-    if (isNaN(from) || isNaN(to)) {
-      return false;
-    }
-
-    // Validate that 'from' is less than or equal to 'to'
-    return from <= to;
-  });
-}
+);
 
 export default router;
