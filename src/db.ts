@@ -1,5 +1,5 @@
 import { Context, Next } from 'koa';
-import { Db, MongoClient } from "mongodb";
+import { Db, MongoClient } from 'mongodb';
 
 const uri = process.env.MONGODB_URI || 'mongodb://mongo:27017';
 const client = new MongoClient(uri);
@@ -22,14 +22,6 @@ export async function connectDb() {
     throw error;
   }
 }
-
-export const getDb = async () => {
-  if (!db) {
-    await connectDb();
-  }
- 
-  return db;
-};
 
 export const dbMiddleware = async (ctx: any, next: any) => {
   if (!db) {
