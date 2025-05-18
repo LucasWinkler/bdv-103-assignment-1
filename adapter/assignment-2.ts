@@ -52,6 +52,7 @@ async function createOrUpdateBook(book: Book): Promise<Book['id']> {
     if (!response.ok) {
       throw new Error(`Failed to update book: ${response.statusText}`);
     }
+    console.log('response from adapter', response);
     const updatedBook = (await response.json()) as Book;
     return updatedBook.id;
   }

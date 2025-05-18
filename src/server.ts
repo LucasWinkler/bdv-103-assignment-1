@@ -4,6 +4,8 @@ import qs from 'koa-qs';
 import cors from '@koa/cors';
 import logger from 'koa-logger';
 import routes from './routes';
+import { dbMiddleware } from './db';
+import { connectDb } from './db';
 
 const app = new Koa();
 qs(app);
@@ -15,10 +17,19 @@ app.use(
   })
 );
 app.use(bodyParser());
-app.use(routes.allowedMethods());
+app.use(dbMiddleware)
 app.use(routes.routes());
+app.use(routes.allowedMethods());
 
 const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+
+connectDb()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch(error => {
+    console.error('Failed to connect to MongoDB:', error);
+    process.exit(1);
+  });

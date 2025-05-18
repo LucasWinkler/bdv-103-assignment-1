@@ -1,14 +1,13 @@
 import zodRouter from 'koa-zod-router';
 import { z } from 'zod';
+import { Db, ObjectId } from 'mongodb';
 
 import {
-  Book,
   bookFilterSchema,
   bookSchema,
   createBookSchema,
   updateBookSchema,
 } from '../adapter/assignment-2';
-import { bookStore } from './books';
 
 const router = zodRouter({
   zodRouter: {
@@ -25,9 +24,6 @@ const router = zodRouter({
           })),
         };
       } else {
-        ctx.body = {
-          message: `Some wierd error failed ${ctx}`,
-        };
         await next();
       }
     },
@@ -39,23 +35,31 @@ router.get({
   name: 'getBooks',
   handler: async ctx => {
     try {
+      const db = ctx.state.db as Db;
       const { filters } = ctx.request.query;
-      if (!filters || filters.length === 0) {
-        ctx.body = bookStore.getAll();
-        return;
-      }
 
-      const filteredBooks = bookStore
-        .getAll()
-        .filter(book =>
-          filters.some(
-            filter =>
-              (filter.from === undefined || book.price >= filter.from) &&
-              (filter.to === undefined || book.price <= filter.to)
-          )
-        );
+      const query =
+        filters && filters.length > 0
+          ? {
+              $or: filters.map(filter => ({
+                price: {
+                  ...(filter.from !== undefined && { $gte: filter.from }),
+                  ...(filter.to !== undefined && { $lte: filter.to }),
+                },
+              })),
+            }
+          : {};
 
-      ctx.body = filteredBooks;
+      const books = await db.collection('books').find(query).toArray();
+
+      ctx.body = books.map(book => ({
+        id: book._id.toString(),
+        name: book.name,
+        author: book.author,
+        description: book.description,
+        price: book.price,
+        image: book.image,
+      }));
     } catch (error) {
       ctx.status = 500;
       ctx.body = { error: `Failed to fetch books due to: ${error}` };
@@ -76,9 +80,12 @@ router.post({
   path: '/books',
   name: 'createBook',
   handler: async ctx => {
-    console.log('ctx', ctx);
     try {
-      const newBook = bookStore.create(ctx.request.body);
+      const db = ctx.state.db as Db;
+      const { body } = ctx.request;
+
+      const result = await db.collection('books').insertOne(body);
+      const newBook = { ...body, id: result.insertedId.toString() };
 
       ctx.status = 201;
       ctx.body = newBook;
@@ -103,17 +110,31 @@ router.put({
   name: 'updateBook',
   handler: async ctx => {
     try {
-      const updatedBook = bookStore.update(
-        ctx.params.id,
-        ctx.request.body as Book
-      );
+      const db = ctx.state.db as Db;
+      const { params, body } = ctx.request;
 
-      if (!updatedBook) {
+      const result = await db
+        .collection('books')
+        .findOneAndUpdate(
+          { _id: new ObjectId(params.id) },
+          { $set: body },
+          { includeResultMetadata: true }
+        );
+
+      if (!result?.value) {
         ctx.status = 404;
         ctx.body = { error: 'Book not found' };
         return;
       }
-      ctx.body = updatedBook;
+
+      ctx.body = {
+        id: result.value._id.toString(),
+        name: result.value.name,
+        author: result.value.author,
+        description: result.value.description,
+        price: result.value.price,
+        image: result.value.image,
+      };
     } catch (error) {
       ctx.status = 500;
       ctx.body = { error: `Failed to update book due to: ${error}` };
@@ -136,8 +157,14 @@ router.delete({
   name: 'deleteBook',
   handler: async ctx => {
     try {
-      const deletedBook = bookStore.delete(ctx.params.id);
-      if (!deletedBook) {
+      const db = ctx.state.db as Db;
+      const { params } = ctx.request;
+
+      const result = await db
+        .collection('books')
+        .deleteOne({ _id: new ObjectId(params.id) });
+
+      if (result.deletedCount === 0) {
         ctx.status = 404;
         ctx.body = { error: 'Book not found' };
         return;
@@ -152,7 +179,7 @@ router.delete({
   validate: {
     params: z.object({ id: z.string() }),
     response: z.union([
-      z.null(),
+      z.undefined(),
       z.object({
         error: z.string(),
       }),

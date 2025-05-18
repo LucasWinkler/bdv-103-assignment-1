@@ -1,4 +1,4 @@
-version: "4.0"
+version: '4.0'
 
 services:
   dev:
@@ -7,3 +7,10 @@ services:
     volumes:
       - ../..:/workspaces:cached
     command: sleep infinity
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongo-data:/data/db
