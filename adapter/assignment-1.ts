@@ -8,6 +8,17 @@ export const bookSchema = z.object({
   image: z.string(),
 });
 
+export const bookFilterSchema = z
+  .array(
+    z
+      .object({
+        from: z.coerce.number().optional(),
+        to: z.coerce.number().optional(),
+      })
+      .strict()
+  )
+  .optional();
+
 export type Book = z.infer<typeof bookSchema>;
 
 async function listBooks(
