@@ -1,5 +1,4 @@
 import z from 'zod';
-import books from './../mcmasteful-book-list.json';
 
 export const bookSchema = z.object({
   name: z.string(),
@@ -11,22 +10,27 @@ export const bookSchema = z.object({
 
 export type Book = z.infer<typeof bookSchema>;
 
-// If you have multiple filters, a book matching any of them is a match.
 async function listBooks(
   filters?: Array<{ from?: number; to?: number }>
 ): Promise<Book[]> {
-  console.log('filters', filters);
-  if (!filters || filters.length === 0) {
-    return books; // No filters, return all books
-  }
-  console.log('running listBooks');
-  return books.filter(book =>
-    filters.some(
-      filter =>
-        (filter.from === undefined || book.price >= filter.from) &&
-        (filter.to === undefined || book.price <= filter.to)
-    )
+  const params = new URLSearchParams();
+
+  filters?.forEach((filter, index) => {
+    if (filter.from !== undefined)
+      params.append(`filters[${index}][from]`, filter.from.toString());
+    if (filter.to !== undefined)
+      params.append(`filters[${index}][to]`, filter.to.toString());
+  });
+
+  const response = await fetch(
+    `http://localhost:3000/books${params.toString() ? `?${params}` : ''}`
   );
+  if (!response.ok) {
+    throw new Error(`Failed to fetch books: ${response.statusText}`);
+  }
+
+  const books = (await response.json()) as Book[];
+  return books;
 }
 
 const assignment = 'assignment-1';

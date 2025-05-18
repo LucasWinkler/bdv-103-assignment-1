@@ -2,6 +2,7 @@ import zodRouter from 'koa-zod-router';
 import { z } from 'zod';
 import adapter from '../adapter';
 import { bookSchema } from '../adapter/assignment-1';
+import books from './../mcmasteful-book-list.json';
 
 const filterSchema = z
   .array(
@@ -51,8 +52,20 @@ router.get(
   async ctx => {
     try {
       const { filters } = ctx.request.query;
-      const books = await adapter.listBooks(filters);
-      ctx.body = books;
+      if (!filters || filters.length === 0) {
+        ctx.body = books;
+        return;
+      }
+
+      const filteredBooks = books.filter(book =>
+        filters.some(
+          filter =>
+            (filter.from === undefined || book.price >= filter.from) &&
+            (filter.to === undefined || book.price <= filter.to)
+        )
+      );
+
+      ctx.body = filteredBooks;
     } catch (error) {
       ctx.status = 500;
       ctx.body = { error: `Failed to fetch books due to: ${error}` };
