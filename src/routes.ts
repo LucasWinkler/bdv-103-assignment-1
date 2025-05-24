@@ -2,12 +2,8 @@ import zodRouter from 'koa-zod-router';
 import { Db, ObjectId } from 'mongodb';
 import { z } from 'zod';
 
-import {
-  bookFilterSchema,
-  bookSchema,
-  createBookSchema,
-  updateBookSchema,
-} from '../adapter/assignment-2';
+import { createBookSchema, updateBookSchema } from '../adapter/assignment-2';
+import { bookFilterSchema, bookSchema } from '../adapter/assignment-3';
 
 const router = zodRouter({
   zodRouter: {
@@ -41,12 +37,35 @@ router.get({
       const query =
         filters && filters.length > 0
           ? {
-              $or: filters.map((filter) => ({
-                price: {
-                  ...(filter.from !== undefined && { $gte: filter.from }),
-                  ...(filter.to !== undefined && { $lte: filter.to }),
-                },
-              })),
+              $or: filters.map((filter) => {
+                const conditions: {
+                  price?: { $gte?: number; $lte?: number };
+                  name?: { $regex: string; $options: string };
+                  author?: { $regex: string; $options: string };
+                } = {};
+
+                if (
+                  (filter.from !== undefined && !isNaN(filter.from)) ||
+                  (filter.to !== undefined && !isNaN(filter.to))
+                ) {
+                  conditions.price = {
+                    ...(filter.from !== undefined &&
+                      !isNaN(filter.from) && { $gte: filter.from }),
+                    ...(filter.to !== undefined &&
+                      !isNaN(filter.to) && { $lte: filter.to }),
+                  };
+                }
+
+                if (filter.name !== undefined) {
+                  conditions.name = { $regex: filter.name, $options: 'i' };
+                }
+
+                if (filter.author !== undefined) {
+                  conditions.author = { $regex: filter.author, $options: 'i' };
+                }
+
+                return conditions;
+              }),
             }
           : {};
 
