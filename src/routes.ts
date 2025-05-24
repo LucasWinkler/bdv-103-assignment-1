@@ -1,6 +1,6 @@
 import zodRouter from 'koa-zod-router';
-import { z } from 'zod';
 import { Db, ObjectId } from 'mongodb';
+import { z } from 'zod';
 
 import {
   bookFilterSchema,
@@ -18,7 +18,7 @@ const router = zodRouter({
         ctx.status = 422;
         ctx.body = {
           message: 'Validation failed',
-          errors: ctx.invalid.query?.issues.map(issue => ({
+          errors: ctx.invalid.query?.issues.map((issue) => ({
             field: issue.path.join('.'),
             message: issue.message,
           })),
@@ -33,7 +33,7 @@ const router = zodRouter({
 router.get({
   path: '/books',
   name: 'getBooks',
-  handler: async ctx => {
+  handler: async (ctx) => {
     try {
       const db = ctx.state.db as Db;
       const { filters } = ctx.request.query;
@@ -41,7 +41,7 @@ router.get({
       const query =
         filters && filters.length > 0
           ? {
-              $or: filters.map(filter => ({
+              $or: filters.map((filter) => ({
                 price: {
                   ...(filter.from !== undefined && { $gte: filter.from }),
                   ...(filter.to !== undefined && { $lte: filter.to }),
@@ -52,7 +52,7 @@ router.get({
 
       const books = await db.collection('books').find(query).toArray();
 
-      ctx.body = books.map(book => ({
+      ctx.body = books.map((book) => ({
         id: book._id.toString(),
         name: book.name,
         author: book.author,
@@ -79,7 +79,7 @@ router.get({
 router.post({
   path: '/books',
   name: 'createBook',
-  handler: async ctx => {
+  handler: async (ctx) => {
     try {
       const db = ctx.state.db as Db;
       const { body } = ctx.request;
@@ -108,7 +108,7 @@ router.post({
 router.put({
   path: '/books/:id',
   name: 'updateBook',
-  handler: async ctx => {
+  handler: async (ctx) => {
     try {
       const db = ctx.state.db as Db;
       const { params, body } = ctx.request;
@@ -155,7 +155,7 @@ router.put({
 router.delete({
   path: '/books/:id',
   name: 'deleteBook',
-  handler: async ctx => {
+  handler: async (ctx) => {
     try {
       const db = ctx.state.db as Db;
       const { params } = ctx.request;
