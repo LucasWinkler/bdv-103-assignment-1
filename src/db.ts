@@ -14,7 +14,7 @@ export async function connectDb() {
   console.log('Connecting to MongoDB...');
   try {
     await client.connect();
-    db = client.db('assignment-2');
+    db = client.db('assignment-3');
     console.log('Connected to MongoDB');
     return db;
   } catch (error) {
@@ -23,10 +23,17 @@ export async function connectDb() {
   }
 }
 
-export const dbMiddleware = async (ctx: any, next: any) => {
+type ContextWithDb = Context & {
+  state: {
+    db: Db;
+  };
+};
+
+export const dbMiddleware = async (ctx: ContextWithDb, next: Next) => {
   if (!db) {
     throw new Error('Database not connected');
   }
+
   ctx.state.db = db;
   await next();
 };
