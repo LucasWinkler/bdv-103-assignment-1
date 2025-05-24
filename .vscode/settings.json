@@ -1,0 +1,12 @@
+{
+  "prettier.endOfLine": "lf",
+  "editor.formatOnSave": true,
+  "eslint.enable": true,
+  "eslint.format.enable": false,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.stylelint": "explicit"
+  },
+  "prettier.requireConfig": true
+}
