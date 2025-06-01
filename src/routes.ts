@@ -2,8 +2,8 @@ import zodRouter from 'koa-zod-router';
 import { Db, ObjectId } from 'mongodb';
 import { z } from 'zod';
 
-import { createBookSchema, updateBookSchema } from '../adapter/assignment-2';
-import { bookFilterSchema, bookSchema } from '../adapter/assignment-3';
+import { createBookSchema, updateBookSchema } from '../adapter/assignment-2.js';
+import { bookFilterSchema, bookSchema } from '../adapter/assignment-3.js';
 
 const router = zodRouter({
   zodRouter: {
