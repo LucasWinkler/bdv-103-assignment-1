@@ -12,7 +12,8 @@
     "validate": "npm run type-check && npm run lint && prettier --check .",
     "prepare": "husky",
     "test": "vitest",
-    "test:ci": "vitest run"
+    "test:ci": "vitest run",
+    "seed": "ts-node src/seed.ts"
   },
   "lint-staged": {
     "*.{js,ts}": [
