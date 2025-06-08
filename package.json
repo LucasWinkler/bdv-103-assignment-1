@@ -11,7 +11,8 @@
     "type-check": "tsc --noEmit",
     "validate": "npm run type-check && npm run lint && prettier --check .",
     "prepare": "husky",
-    "test": "vitest"
+    "test": "vitest",
+    "test:ci": "vitest run"
   },
   "lint-staged": {
     "*.{js,ts}": [
