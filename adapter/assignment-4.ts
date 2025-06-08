@@ -1,4 +1,3 @@
-// TODO: Remove rule this when I am on this assignment
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import z from 'zod';
 
@@ -31,8 +30,9 @@ export type BookFilter = z.infer<typeof bookFilterSchema>;
 
 // If multiple filters are provided, any book that matches at least one of them should be returned
 // Within a single filter, a book would need to match all the given conditions
-async function listBooks(filters?: BookFilter[]): Promise<Book[]> {
-  throw new Error('Todo');
+async function listBooks(filters?: BookFilter): Promise<Book[]> {
+  const books = await previous_assignment.listBooks(filters);
+  return books;
 }
 
 async function createOrUpdateBook(book: Book): Promise<Book['id']> {

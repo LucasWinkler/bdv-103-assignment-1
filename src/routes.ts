@@ -3,7 +3,7 @@ import { Db, ObjectId } from 'mongodb';
 import { z } from 'zod';
 
 import { createBookSchema, updateBookSchema } from '../adapter/assignment-2';
-import { bookFilterSchema, bookSchema } from '../adapter/assignment-3';
+import { bookFilterSchema, bookSchema } from '../adapter/assignment-4';
 
 const router = zodRouter({
   zodRouter: {
