@@ -4,8 +4,8 @@ import bodyParser from 'koa-bodyparser';
 import logger from 'koa-logger';
 import qs from 'koa-qs';
 
-import { connectDb, dbMiddleware } from './db.js';
-import routes from './routes.js';
+import { connectDb, dbMiddleware } from './db';
+import routes from './routes';
 
 const app = new Koa();
 qs(app);

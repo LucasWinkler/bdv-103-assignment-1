@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import z from 'zod';
 
-import previous_assignment from './assignment-3.js';
+import previous_assignment from './assignment-3';
 
 export const bookSchema = z.object({
   id: z.string(),

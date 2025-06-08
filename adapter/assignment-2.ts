@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import assignment1 from './assignment-1.js';
+import assignment1 from './assignment-1';
 
 export const bookSchema = z.object({
   id: z.string(),

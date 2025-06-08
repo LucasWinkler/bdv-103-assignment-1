@@ -1,7 +1,7 @@
 import { Context, Next } from 'koa';
 import { Db, MongoClient } from 'mongodb';
 
-const uri = process.env.MONGODB_URI || 'mongodb://mongo:27017';
+const uri = process.env.MONGO_URI ?? 'mongodb://mongo:27017';
 const client = new MongoClient(uri);
 
 let db: Db | undefined = undefined;
@@ -14,7 +14,7 @@ export async function connectDb() {
   console.log('Connecting to MongoDB...');
   try {
     await client.connect();
-    db = client.db('assignment-3');
+    db = client.db('bdv-103-bookstore');
     console.log('Connected to MongoDB');
     return db;
   } catch (error) {
