@@ -6,7 +6,6 @@
   "dockerComposeFile": ["docker-compose.yml"],
   "service": "dev",
   "features": {
-    "ghcr.io/devcontainers-contrib/features/tsx:1": {},
     "ghcr.io/mcmastercce/bvd-103-mcmasterful-books/mcmasterful-books:latest": {}
   },
 
