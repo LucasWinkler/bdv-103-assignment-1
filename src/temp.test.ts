@@ -8,12 +8,12 @@ let databaseAccessor: BookDatabaseAccessor;
 
 beforeAll(async () => {
   await setup();
-
   databaseAccessor = getBookDatabase();
   await seedDb(databaseAccessor);
 });
 
 afterAll(async () => {
+  await databaseAccessor.database.dropDatabase();
   await client.close();
   await teardown();
 });
