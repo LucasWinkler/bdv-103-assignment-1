@@ -20,4 +20,6 @@ export async function seedDb(databaseAccessor?: BookDatabaseAccessor) {
   }
 }
 
-seedDb();
+if (require.main === module) {
+  seedDb();
+}
