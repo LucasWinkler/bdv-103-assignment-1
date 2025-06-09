@@ -3,7 +3,7 @@ import { Collection, Db, MongoClient } from 'mongodb';
 
 import type { Book } from '../../adapter/assignment-4';
 
-let client: MongoClient;
+export let client: MongoClient;
 
 export function initializeClient(uri: string) {
   if (client) {
@@ -13,22 +13,22 @@ export function initializeClient(uri: string) {
   return client;
 }
 
+const uri = ((global as any).MONGO_URI as string) ?? 'mongodb://mongo';
+client = initializeClient(uri);
+
 export interface BookDatabaseAccessor {
   database: Db;
   book_collection: Collection<Book>;
 }
 
 export function getBookDatabase(): BookDatabaseAccessor {
-  const uri = ((global as any).MONGO_URI as string) ?? 'mongodb://mongo';
-  const mongoClient = initializeClient(uri);
-
   // If we aren't testing, we are creating a random database name
   const dbName =
     (global as any).MONGO_URI !== undefined
       ? Math.floor(Math.random() * 100000).toPrecision()
       : 'bdv-103-bookstore';
 
-  const database = mongoClient.db(dbName);
+  const database = client.db(dbName);
 
   const book_collection = database.collection<Book>('books');
   return {
