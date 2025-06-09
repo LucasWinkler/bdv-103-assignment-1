@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Collection, Db, MongoClient } from 'mongodb';
 
-import type { Book } from '../../adapter/assignment-4';
+import type { Book, Order, WarehouseBook } from '../../adapter/assignment-4';
 
 export let client: MongoClient;
 
@@ -16,6 +16,8 @@ function initializeClient(uri: string): MongoClient {
 export interface BookDatabaseAccessor {
   database: Db;
   book_collection: Collection<Book>;
+  warehouse_collection: Collection<WarehouseBook>;
+  orders_collection: Collection<Order>;
 }
 
 export function getBookDatabase(): BookDatabaseAccessor {
@@ -29,10 +31,14 @@ export function getBookDatabase(): BookDatabaseAccessor {
 
   const database = mongoClient.db(dbName);
   const book_collection = database.collection<Book>('books');
+  const warehouse_collection = database.collection<WarehouseBook>('warehouse');
+  const orders_collection = database.collection<Order>('orders');
 
   return {
     database,
     book_collection,
+    warehouse_collection,
+    orders_collection,
   };
 }
 
@@ -57,6 +63,16 @@ if (import.meta.vitest) {
     it('should have book collection', () => {
       const { book_collection } = getBookDatabase();
       expect(book_collection).toBeDefined();
+    });
+
+    it('should have warehouse collection', () => {
+      const { warehouse_collection } = getBookDatabase();
+      expect(warehouse_collection).toBeDefined();
+    });
+
+    it('should have orders collection', () => {
+      const { orders_collection } = getBookDatabase();
+      expect(orders_collection).toBeDefined();
     });
   });
 }

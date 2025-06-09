@@ -9,6 +9,9 @@ export async function seedDb(databaseAccessor?: BookDatabaseAccessor) {
   try {
     const { book_collection } = databaseAccessor ?? getBookDatabase();
 
+    console.log('Deleting collections');
+    await book_collection.deleteMany({});
+
     console.log('Inserting collections');
     await book_collection.insertMany(books);
 

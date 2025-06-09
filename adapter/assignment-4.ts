@@ -28,8 +28,21 @@ export const bookFilterSchema = z
 export type Book = z.infer<typeof bookSchema>;
 export type BookFilter = z.infer<typeof bookFilterSchema>;
 
-// If multiple filters are provided, any book that matches at least one of them should be returned
-// Within a single filter, a book would need to match all the given conditions
+export const warehouseBookSchema = z.object({
+  bookId: z.string(),
+  shelfId: z.string(),
+  quantity: z.number(),
+});
+
+export type WarehouseBook = z.infer<typeof warehouseBookSchema>;
+
+export const orderSchema = z.object({
+  id: z.string(),
+  books: z.record(z.string(), z.number()),
+});
+
+export type Order = z.infer<typeof orderSchema>;
+
 async function listBooks(filters?: BookFilter): Promise<Book[]> {
   const books = await previous_assignment.listBooks(filters);
   return books;
@@ -44,35 +57,35 @@ async function removeBook(book: Book['id']): Promise<void> {
 }
 
 async function lookupBookById(book: Book['id']): Promise<Book> {
+  // TODO: Implement. This needs to hit an api route similar to that of the previous assignment. We need to get the book from the database and include the stock count.
   throw new Error('Todo');
 }
-
-export type ShelfId = string;
-export type OrderId = string;
 
 async function placeBooksOnShelf(
   bookId: Book['id'],
   numberOfBooks: number,
-  shelf: ShelfId
+  shelfId: WarehouseBook['shelfId']
 ): Promise<void> {
   throw new Error('Todo');
 }
 
-async function orderBooks(order: Book['id'][]): Promise<{ orderId: OrderId }> {
+async function orderBooks(
+  order: Book['id'][]
+): Promise<{ orderId: Order['id'] }> {
   throw new Error('Todo');
 }
 
 async function findBookOnShelf(
   book: Book['id']
-): Promise<Array<{ shelf: ShelfId; count: number }>> {
+): Promise<Array<{ shelfId: WarehouseBook['shelfId']; quantity: number }>> {
   throw new Error('Todo');
 }
 
 async function fulfilOrder(
-  order: OrderId,
+  order: Order['id'],
   booksFulfilled: Array<{
     book: Book['id'];
-    shelf: ShelfId;
+    shelfId: WarehouseBook['shelfId'];
     numberOfBooks: number;
   }>
 ): Promise<void> {
@@ -80,7 +93,7 @@ async function fulfilOrder(
 }
 
 async function listOrders(): Promise<
-  Array<{ orderId: OrderId; books: Record<Book['id'], number> }>
+  Array<{ orderId: Order['id']; books: Record<Book['id'], number> }>
 > {
   throw new Error('Todo');
 }
