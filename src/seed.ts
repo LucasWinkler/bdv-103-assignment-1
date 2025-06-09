@@ -1,33 +1,23 @@
-import { MongoClient } from 'mongodb';
-
 import { books } from './books';
+import { BookDatabaseAccessor, getBookDatabase } from './db';
 
-const uri = process.env.MONGO_URI ?? 'mongodb://mongo:27017';
-const client = new MongoClient(uri);
+export async function seedDb(databaseAccessor?: BookDatabaseAccessor) {
+  console.log('Starting seeding');
 
-async function seed() {
   try {
-    await client.connect();
-    console.log('Connected to MongoDB');
+    const { database, book_collection } = databaseAccessor ?? getBookDatabase();
 
-    const db = client.db('bdv-103-bookstore');
-    const bookCollection = db.collection('books');
+    console.log('Dropping database');
+    await database.dropDatabase();
 
-    await bookCollection.deleteMany({});
-    console.log('Collections Deleted');
-
-    const bookResult = await bookCollection.insertMany(books);
-
-    console.log('Books Created:', await bookCollection.countDocuments());
+    console.log('Inserting collections');
+    await book_collection.insertMany(books);
 
     console.log('Seeding completed successfully');
-    return bookResult;
   } catch (error) {
     console.error('Error during seeding:', error);
-    process.exit(1);
-  } finally {
-    await client.close();
+    throw error;
   }
 }
 
-seed();
+seedDb();

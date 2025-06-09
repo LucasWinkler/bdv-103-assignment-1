@@ -1,39 +1,59 @@
-import { Context, Next } from 'koa';
-import { Db, MongoClient } from 'mongodb';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Collection, Db, MongoClient } from 'mongodb';
 
-const uri = process.env.MONGO_URI ?? 'mongodb://mongo:27017';
-const client = new MongoClient(uri);
+import { setup, teardown } from './test/setup';
 
-let db: Db | undefined = undefined;
+import type { Book } from '../adapter/assignment-4';
 
-export async function connectDb() {
-  if (db) {
-    return db;
-  }
+const uri = ((global as any).MONGO_URI as string) ?? 'mongodb://mongo';
+export const client = new MongoClient(uri);
 
-  console.log('Connecting to MongoDB...');
-  try {
-    await client.connect();
-    db = client.db('bdv-103-bookstore');
-    console.log('Connected to MongoDB');
-    return db;
-  } catch (error) {
-    console.error('Error connecting to MongoDB', error);
-    throw error;
-  }
+export interface BookDatabaseAccessor {
+  database: Db;
+  book_collection: Collection<Book>;
 }
 
-type ContextWithDb = Context & {
-  state: {
-    db: Db;
+export function getBookDatabase(): BookDatabaseAccessor {
+  // If we aren’t testing, we are creating a random database name
+  const database = client.db(
+    (global as any).MONGO_URI !== undefined
+      ? Math.floor(Math.random() * 100000).toPrecision()
+      : 'bdv-103-bookstore'
+  );
+
+  const book_collection = database.collection<Book>('books');
+  return {
+    database,
+    book_collection,
   };
-};
+}
 
-export const dbMiddleware = async (ctx: ContextWithDb, next: Next) => {
-  if (!db) {
-    throw new Error('Database not connected');
-  }
+if (import.meta.vitest) {
+  const { beforeAll, afterAll, describe, expect, it } = import.meta.vitest;
 
-  ctx.state.db = db;
-  await next();
-};
+  beforeAll(async () => {
+    await setup();
+  });
+
+  afterAll(async () => {
+    await client.close();
+    await teardown();
+  });
+
+  describe('db connection', () => {
+    it('db should be defined', async () => {
+      const { database } = getBookDatabase();
+      expect(database).toBeDefined();
+    });
+
+    it('db should not be the default database', async () => {
+      const { database } = getBookDatabase();
+      expect(database.databaseName).not.toBe('bdv-103-bookstore');
+    });
+
+    it('should have book collection', () => {
+      const { book_collection } = getBookDatabase();
+      expect(book_collection).toBeDefined();
+    });
+  });
+}

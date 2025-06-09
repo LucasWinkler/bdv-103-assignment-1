@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "This is a template repository for the first assignment in BVD 103 at McMaster Continuing Education.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "start-server": "ts-node src/server.ts",
+    "start-server": "tsx src/server.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
     "type-check": "tsc --noEmit",
@@ -12,7 +13,7 @@
     "prepare": "husky",
     "test": "vitest",
     "test:ci": "vitest run",
-    "seed": "ts-node src/seed.ts"
+    "seed": "tsx src/seed.ts"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -57,6 +58,7 @@
     "mongodb-memory-server": "^10.1.4",
     "prettier": "3.5.3",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.32.1",
     "vitest": "^3.1.4"
