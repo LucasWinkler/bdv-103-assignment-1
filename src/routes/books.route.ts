@@ -1,10 +1,15 @@
 import zodRouter from 'koa-zod-router';
-import { ObjectId } from 'mongodb';
 import { z } from 'zod';
 
 import { createBookSchema, updateBookSchema } from '../../adapter/assignment-2';
 import { bookFilterSchema, bookSchema } from '../../adapter/assignment-4';
 import { getBookDatabase } from '../db';
+import {
+  createBook,
+  deleteBook,
+  listBooks,
+  updateBook,
+} from '../services/books.service';
 
 const booksRouter = zodRouter({
   zodRouter: {
@@ -33,53 +38,10 @@ booksRouter.get({
   handler: async (ctx) => {
     try {
       const { filters } = ctx.request.query;
-
-      const query =
-        filters && filters.length > 0
-          ? {
-              $or: filters.map((filter) => {
-                const conditions: {
-                  price?: { $gte?: number; $lte?: number };
-                  name?: { $regex: string; $options: string };
-                  author?: { $regex: string; $options: string };
-                } = {};
-
-                if (
-                  (filter.from !== undefined && !isNaN(filter.from)) ||
-                  (filter.to !== undefined && !isNaN(filter.to))
-                ) {
-                  conditions.price = {
-                    ...(filter.from !== undefined &&
-                      !isNaN(filter.from) && { $gte: filter.from }),
-                    ...(filter.to !== undefined &&
-                      !isNaN(filter.to) && { $lte: filter.to }),
-                  };
-                }
-
-                if (filter.name !== undefined) {
-                  conditions.name = { $regex: filter.name, $options: 'i' };
-                }
-
-                if (filter.author !== undefined) {
-                  conditions.author = { $regex: filter.author, $options: 'i' };
-                }
-
-                return conditions;
-              }),
-            }
-          : {};
-
       const { book_collection } = getBookDatabase();
-      const books = await book_collection.find(query).toArray();
+      const books = await listBooks(filters, book_collection);
 
-      ctx.body = books.map((book) => ({
-        id: book._id.toString(),
-        name: book.name,
-        author: book.author,
-        description: book.description,
-        price: book.price,
-        image: book.image,
-      }));
+      ctx.body = books;
     } catch (error) {
       ctx.status = 500;
       ctx.body = { error: `Failed to fetch books due to: ${error}` };
@@ -102,13 +64,8 @@ booksRouter.post({
   handler: async (ctx) => {
     try {
       const { body } = ctx.request;
-
       const { book_collection } = getBookDatabase();
-      const result = await book_collection.insertOne({
-        ...body,
-        id: new ObjectId().toString(),
-      });
-      const newBook = { ...body, id: result.insertedId.toString() };
+      const newBook = await createBook(body, book_collection);
 
       ctx.status = 201;
       ctx.body = newBook;
@@ -135,28 +92,16 @@ booksRouter.put({
     try {
       const { params, body } = ctx.request;
       const { book_collection } = getBookDatabase();
+      const updatedBook = await updateBook(params.id, body, book_collection);
 
-      const result = await book_collection.findOneAndUpdate(
-        { _id: new ObjectId(params.id) },
-        { $set: body },
-        { includeResultMetadata: true }
-      );
-
-      if (!result?.value) {
+      ctx.body = updatedBook;
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Book not found') {
         ctx.status = 404;
-        ctx.body = { error: 'Book not found' };
+        ctx.body = { error: error.message };
         return;
       }
 
-      ctx.body = {
-        id: result.value._id.toString(),
-        name: result.value.name,
-        author: result.value.author,
-        description: result.value.description,
-        price: result.value.price,
-        image: result.value.image,
-      };
-    } catch (error) {
       ctx.status = 500;
       ctx.body = { error: `Failed to update book due to: ${error}` };
     }
@@ -180,19 +125,16 @@ booksRouter.delete({
     try {
       const { params } = ctx.request;
       const { book_collection } = getBookDatabase();
-
-      const result = await book_collection.deleteOne({
-        _id: new ObjectId(params.id),
-      });
-
-      if (result.deletedCount === 0) {
-        ctx.status = 404;
-        ctx.body = { error: 'Book not found' };
-        return;
-      }
+      await deleteBook(params.id, book_collection);
 
       ctx.status = 204;
     } catch (error) {
+      if (error instanceof Error && error.message === 'Book not found') {
+        ctx.status = 404;
+        ctx.body = { error: error.message };
+        return;
+      }
+
       ctx.status = 500;
       ctx.body = { error: `Failed to delete book due to: ${error}` };
     }
