@@ -4,7 +4,7 @@ import bodyParser from 'koa-bodyparser';
 import logger from 'koa-logger';
 import qs from 'koa-qs';
 
-import routes from './routes';
+import router from './routes';
 
 const app = new Koa();
 qs(app);
@@ -17,10 +17,8 @@ app.use(
 );
 app.use(bodyParser());
 
-routes.forEach((router) => {
-  app.use(router.routes());
-  app.use(router.allowedMethods());
-});
+app.use(router.routes());
+app.use(router.allowedMethods());
 
 const PORT = 3000;
 
