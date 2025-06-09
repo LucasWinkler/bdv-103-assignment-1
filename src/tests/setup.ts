@@ -15,6 +15,7 @@ beforeAll(async () => {
   }
 
   const uri = instance.getUri();
+  console.log('uri from in-memory setup', uri);
 
   (global as any).__MONGOINSTANCE = instance;
   (global as any).MONGO_URI = uri.slice(0, uri.lastIndexOf('/'));

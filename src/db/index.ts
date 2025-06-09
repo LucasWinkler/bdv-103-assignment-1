@@ -13,6 +13,7 @@ export interface BookDatabaseAccessor {
 
 export function getBookDatabase(): BookDatabaseAccessor {
   // If we aren’t testing, we are creating a random database name
+  console.log('global.MONGO_URI', (global as any).MONGO_URI);
   const dbName =
     (global as any).MONGO_URI !== undefined
       ? Math.floor(Math.random() * 100000).toPrecision()
