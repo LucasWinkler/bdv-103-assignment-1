@@ -11,7 +11,7 @@ beforeAll(async () => {
   await client.connect();
   databaseAccessor = getBookDatabase();
   await seedDb(databaseAccessor);
-}, 30000);
+});
 
 afterAll(async () => {
   await databaseAccessor.database.dropDatabase();
