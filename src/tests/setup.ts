@@ -19,9 +19,6 @@ beforeAll(async () => {
   (global as any).__MONGOINSTANCE = instance;
   (global as any).MONGO_URI = uri.slice(0, uri.lastIndexOf('/'));
 
-  console.log('Connecting to client');
-  await client.connect();
-
   console.log('MongoMemoryServer setup completed');
 });
 
