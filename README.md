@@ -9,5 +9,5 @@ npm install
 ## Run sample server
 
 ```
-npm run start--server
+npm run start-server
 ```
