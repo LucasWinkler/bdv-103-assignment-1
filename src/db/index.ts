@@ -5,7 +5,7 @@ import { setup, teardown } from '../tests/setup';
 
 import type { Book } from '../../adapter/assignment-4';
 
-const uri = ((global as any).MONGO_URI as string) ?? 'mongodb://mongo';
+const uri = ((global as any).MONGO_URI as string) ?? 'mongodb://mongo:27017';
 export const client = new MongoClient(uri);
 
 export interface BookDatabaseAccessor {
