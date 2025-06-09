@@ -8,6 +8,7 @@ let databaseAccessor: BookDatabaseAccessor;
 
 beforeAll(async () => {
   await setup();
+  await client.connect();
   databaseAccessor = getBookDatabase();
   await seedDb(databaseAccessor);
 });
