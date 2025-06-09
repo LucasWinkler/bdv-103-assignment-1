@@ -1,11 +1,12 @@
 import zodRouter from 'koa-zod-router';
-import { Db, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { z } from 'zod';
 
-import { createBookSchema, updateBookSchema } from '../adapter/assignment-2';
-import { bookFilterSchema, bookSchema } from '../adapter/assignment-4';
+import { createBookSchema, updateBookSchema } from '../../adapter/assignment-2';
+import { bookFilterSchema, bookSchema } from '../../adapter/assignment-4';
+import { getBookDatabase } from '../db';
 
-const router = zodRouter({
+const booksRouter = zodRouter({
   zodRouter: {
     exposeRequestErrors: true,
     exposeResponseErrors: true,
@@ -26,12 +27,11 @@ const router = zodRouter({
   },
 });
 
-router.get({
+booksRouter.get({
   path: '/books',
   name: 'getBooks',
   handler: async (ctx) => {
     try {
-      const db = ctx.state.db as Db;
       const { filters } = ctx.request.query;
 
       const query =
@@ -69,7 +69,8 @@ router.get({
             }
           : {};
 
-      const books = await db.collection('books').find(query).toArray();
+      const { book_collection } = getBookDatabase();
+      const books = await book_collection.find(query).toArray();
 
       ctx.body = books.map((book) => ({
         id: book._id.toString(),
@@ -95,15 +96,18 @@ router.get({
   },
 });
 
-router.post({
+booksRouter.post({
   path: '/books',
   name: 'createBook',
   handler: async (ctx) => {
     try {
-      const db = ctx.state.db as Db;
       const { body } = ctx.request;
 
-      const result = await db.collection('books').insertOne(body);
+      const { book_collection } = getBookDatabase();
+      const result = await book_collection.insertOne({
+        ...body,
+        id: new ObjectId().toString(),
+      });
       const newBook = { ...body, id: result.insertedId.toString() };
 
       ctx.status = 201;
@@ -124,21 +128,19 @@ router.post({
   },
 });
 
-router.put({
+booksRouter.put({
   path: '/books/:id',
   name: 'updateBook',
   handler: async (ctx) => {
     try {
-      const db = ctx.state.db as Db;
       const { params, body } = ctx.request;
+      const { book_collection } = getBookDatabase();
 
-      const result = await db
-        .collection('books')
-        .findOneAndUpdate(
-          { _id: new ObjectId(params.id) },
-          { $set: body },
-          { includeResultMetadata: true }
-        );
+      const result = await book_collection.findOneAndUpdate(
+        { _id: new ObjectId(params.id) },
+        { $set: body },
+        { includeResultMetadata: true }
+      );
 
       if (!result?.value) {
         ctx.status = 404;
@@ -171,17 +173,17 @@ router.put({
   },
 });
 
-router.delete({
+booksRouter.delete({
   path: '/books/:id',
   name: 'deleteBook',
   handler: async (ctx) => {
     try {
-      const db = ctx.state.db as Db;
       const { params } = ctx.request;
+      const { book_collection } = getBookDatabase();
 
-      const result = await db
-        .collection('books')
-        .deleteOne({ _id: new ObjectId(params.id) });
+      const result = await book_collection.deleteOne({
+        _id: new ObjectId(params.id),
+      });
 
       if (result.deletedCount === 0) {
         ctx.status = 404;
@@ -206,4 +208,4 @@ router.delete({
   },
 });
 
-export default router;
+export default booksRouter;

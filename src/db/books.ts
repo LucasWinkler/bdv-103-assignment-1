@@ -1,10 +1,10 @@
-import { randomUUID } from 'crypto';
+import { ObjectId } from 'mongodb';
 
-import type { Book } from '../adapter/assignment-4';
+import type { Book } from '../../adapter/assignment-4';
 
 export const books: Book[] = [
   {
-    id: randomUUID(),
+    id: new ObjectId().toString(),
     name: "Giant's Bread",
     author: 'Agatha Christie',
     description:
@@ -14,7 +14,7 @@ export const books: Book[] = [
       'https://upload.wikimedia.org/wikipedia/en/4/45/Giant%27s_Bread_First_Edition_Cover.jpg',
   },
   {
-    id: randomUUID(),
+    id: new ObjectId().toString(),
     name: 'Appointment with Death',
     author: 'Agatha Christie',
     description:
@@ -24,7 +24,7 @@ export const books: Book[] = [
       'https://upload.wikimedia.org/wikipedia/en/thumb/c/cc/Appointment_with_Death_First_Edition_Cover_1938.jpg/220px-Appointment_with_Death_First_Edition_Cover_1938.jpg',
   },
   {
-    id: randomUUID(),
+    id: new ObjectId().toString(),
     name: 'Beowulf: The Monsters and the Critics',
     author: 'J.R.R Tolkein',
     description:
@@ -34,7 +34,7 @@ export const books: Book[] = [
       'https://upload.wikimedia.org/wikipedia/en/thumb/5/51/Beowulf_The_Monsters_and_the_Critics_1936_title_page.jpg/220px-Beowulf_The_Monsters_and_the_Critics_1936_title_page.jpg',
   },
   {
-    id: randomUUID(),
+    id: new ObjectId().toString(),
     name: 'The Complete Works of William Shakespeare',
     author: 'William Shakespeare',
     description:
@@ -43,7 +43,7 @@ export const books: Book[] = [
     image: 'https://m.media-amazon.com/images/I/71Bd39ofMAL._SL1500_.jpg',
   },
   {
-    id: randomUUID(),
+    id: new ObjectId().toString(),
     name: 'Iliad & Odyssey',
     author: 'Homer',
     description:
@@ -52,7 +52,7 @@ export const books: Book[] = [
     image: 'https://m.media-amazon.com/images/I/71ZWKmOIpVL._SL1500_.jpg',
   },
   {
-    id: randomUUID(),
+    id: new ObjectId().toString(),
     name: 'Modern Software Engineering: Doing What Works to Build Better Software Faster',
     author: 'David Farley',
     description:
@@ -61,7 +61,7 @@ export const books: Book[] = [
     image: 'https://m.media-amazon.com/images/I/81sji+WquSL._SL1500_.jpg',
   },
   {
-    id: randomUUID(),
+    id: new ObjectId().toString(),
     name: 'Domain-Driven Design: Tackling Complexity in the Heart of Software',
     author: 'Eric Evans',
     description:

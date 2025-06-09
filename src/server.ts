@@ -16,8 +16,11 @@ app.use(
   })
 );
 app.use(bodyParser());
-app.use(routes.routes());
-app.use(routes.allowedMethods());
+
+routes.forEach((router) => {
+  app.use(router.routes());
+  app.use(router.allowedMethods());
+});
 
 const PORT = 3000;
 

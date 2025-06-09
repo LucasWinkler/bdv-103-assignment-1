@@ -1,5 +1,5 @@
+import { BookDatabaseAccessor, getBookDatabase } from '.';
 import { books } from './books';
-import { BookDatabaseAccessor, getBookDatabase } from './db';
 
 export async function seedDb(databaseAccessor?: BookDatabaseAccessor) {
   console.log('Starting seeding');

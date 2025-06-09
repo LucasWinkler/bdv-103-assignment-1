@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { BookDatabaseAccessor, client, getBookDatabase } from './db';
-import { seedDb } from './seed';
-import { setup, teardown } from './test/setup';
+import { BookDatabaseAccessor, client, getBookDatabase } from '../db';
+import { seedDb } from '../db/seed';
+import { setup, teardown } from './setup';
 
 let databaseAccessor: BookDatabaseAccessor;
 

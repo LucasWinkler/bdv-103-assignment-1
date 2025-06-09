@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Collection, Db, MongoClient } from 'mongodb';
 
-import { setup, teardown } from './test/setup';
+import { setup, teardown } from '../tests/setup';
 
-import type { Book } from '../adapter/assignment-4';
+import type { Book } from '../../adapter/assignment-4';
 
 const uri = ((global as any).MONGO_URI as string) ?? 'mongodb://mongo';
 export const client = new MongoClient(uri);
