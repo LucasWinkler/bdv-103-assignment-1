@@ -17,6 +17,8 @@ beforeAll(async () => {
 
   (global as any).__MONGOINSTANCE = instance;
   (global as any).MONGO_URI = uri.slice(0, uri.lastIndexOf('/'));
+
+  await client.connect();
 });
 
 afterAll(async () => {
