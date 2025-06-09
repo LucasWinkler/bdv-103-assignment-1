@@ -2,7 +2,7 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { afterAll, beforeAll } from 'vitest';
 
-import { client } from '../db';
+import { client, getBookDatabase } from '../db';
 
 beforeAll(async () => {
   const instance = await MongoMemoryServer.create({
@@ -14,11 +14,10 @@ beforeAll(async () => {
   }
 
   const uri = instance.getUri();
-
   (global as any).__MONGOINSTANCE = instance;
   (global as any).MONGO_URI = uri.slice(0, uri.lastIndexOf('/'));
 
-  await client.connect();
+  getBookDatabase();
 });
 
 afterAll(async () => {
