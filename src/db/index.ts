@@ -1,17 +1,14 @@
+/* eslint-disable no-var */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Collection, Db, MongoClient } from 'mongodb';
 
 import type { Book } from '../../adapter/assignment-4';
 
-let client: MongoClient;
-
-export function initializeClient(uri: string) {
-  if (client) {
-    return client;
-  }
-  client = new MongoClient(uri);
-  return client;
+declare global {
+  var client: MongoClient | undefined;
 }
+const uri = ((global as any).MONGO_URI as string) ?? 'mongodb://mongo';
+export const client = global.client ?? new MongoClient(uri);
 
 export interface BookDatabaseAccessor {
   database: Db;
@@ -19,17 +16,13 @@ export interface BookDatabaseAccessor {
 }
 
 export function getBookDatabase(): BookDatabaseAccessor {
-  const uri = ((global as any).MONGO_URI as string) ?? 'mongodb://mongo';
-  const mongoClient = initializeClient(uri);
-
   // If we aren't testing, we are creating a random database name
-  console.log('global.MONGO_URI', (global as any).MONGO_URI);
   const dbName =
     (global as any).MONGO_URI !== undefined
       ? Math.floor(Math.random() * 100000).toPrecision()
       : 'bdv-103-bookstore';
-  console.log('dbName', dbName);
-  const database = mongoClient.db(dbName);
+
+  const database = client.db(dbName);
 
   const book_collection = database.collection<Book>('books');
   return {
