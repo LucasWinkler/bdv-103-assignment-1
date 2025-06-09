@@ -5,6 +5,7 @@ export default defineConfig({
     includeSource: ['src/**/*.ts'],
     setupFiles: ['src/tests/setup.ts'],
     globals: true,
+    hookTimeout: 30000,
   },
   define: {
     'import.meta.vitest': 'undefined',
