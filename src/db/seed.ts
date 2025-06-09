@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'url';
+
 import { BookDatabaseAccessor, getBookDatabase } from '.';
 import { books } from './books';
 
@@ -17,6 +19,6 @@ export async function seedDb(databaseAccessor?: BookDatabaseAccessor) {
   }
 }
 
-if (require.main === module) {
+if (fileURLToPath(import.meta.url) === process.argv[1]) {
   seedDb();
 }
