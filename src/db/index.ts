@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Collection, Db, MongoClient } from 'mongodb';
 
-import { setup, teardown } from '../tests/setup';
-
 import type { Book } from '../../adapter/assignment-4';
 
 const uri = ((global as any).MONGO_URI as string) ?? 'mongodb://mongo';
@@ -28,18 +26,12 @@ export function getBookDatabase(): BookDatabaseAccessor {
   };
 }
 
+export async function cleanupDatabase(accessor: BookDatabaseAccessor) {
+  await accessor.database.dropDatabase();
+}
+
 if (import.meta.vitest) {
-  const { beforeAll, afterAll, describe, expect, it } = import.meta.vitest;
-
-  beforeAll(async () => {
-    await client.connect();
-    await setup();
-  });
-
-  afterAll(async () => {
-    await client.close();
-    await teardown();
-  });
+  const { describe, expect, it } = import.meta.vitest;
 
   describe('db connection', () => {
     it('db should be defined', async () => {
