@@ -1,6 +1,7 @@
 import zodRouter from 'koa-zod-router';
 import { z } from 'zod';
 
+import { getBookDatabase } from '../db';
 import {
   findBookOnShelf,
   getAllBookStocks,
@@ -36,7 +37,8 @@ warehouseRouter.get({
     const { bookId } = ctx.request.params;
 
     try {
-      const stock = await getBookStock(bookId);
+      const { warehouse_collection } = getBookDatabase();
+      const stock = await getBookStock(bookId, warehouse_collection);
       ctx.body = { bookId, stock };
     } catch (error) {
       console.error(error);
@@ -54,7 +56,8 @@ warehouseRouter.get({
   name: 'getAllBookStocks',
   handler: async (ctx) => {
     try {
-      const stocks = await getAllBookStocks();
+      const { warehouse_collection } = getBookDatabase();
+      const stocks = await getAllBookStocks(warehouse_collection);
       ctx.body = stocks;
     } catch (error) {
       console.error(error);
@@ -72,7 +75,13 @@ warehouseRouter.post({
   handler: async (ctx) => {
     const { bookId, shelf, numberOfBooks } = ctx.request.body;
     try {
-      await placeBooksOnShelf(bookId, shelf, numberOfBooks);
+      const { warehouse_collection } = getBookDatabase();
+      await placeBooksOnShelf(
+        bookId,
+        shelf,
+        numberOfBooks,
+        warehouse_collection
+      );
       ctx.status = 204;
     } catch (error) {
       console.error(error);
@@ -95,7 +104,8 @@ warehouseRouter.get({
   handler: async (ctx) => {
     const { bookId } = ctx.request.params;
     try {
-      const shelves = await findBookOnShelf(bookId);
+      const { warehouse_collection } = getBookDatabase();
+      const shelves = await findBookOnShelf(bookId, warehouse_collection);
       ctx.body = shelves;
     } catch (error) {
       console.error(error);

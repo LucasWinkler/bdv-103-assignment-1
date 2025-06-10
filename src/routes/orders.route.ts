@@ -1,6 +1,7 @@
 import zodRouter from 'koa-zod-router';
 import { z } from 'zod';
 
+import { getBookDatabase } from '../db';
 import {
   fulfilOrder,
   listOrders,
@@ -34,7 +35,8 @@ ordersRouter.post({
   handler: async (ctx) => {
     const { bookIds } = ctx.request.body;
     try {
-      const result = await orderBooks(bookIds);
+      const { orders_collection } = getBookDatabase();
+      const result = await orderBooks(bookIds, orders_collection);
       ctx.body = result;
     } catch (error) {
       console.error(error);
@@ -52,7 +54,8 @@ ordersRouter.get({
   name: 'listOrders',
   handler: async (ctx) => {
     try {
-      const orders = await listOrders();
+      const { orders_collection } = getBookDatabase();
+      const orders = await listOrders(orders_collection);
       ctx.body = orders;
     } catch (error) {
       console.error(error);
@@ -73,7 +76,13 @@ ordersRouter.post({
     const { id } = ctx.request.params;
     const { booksFulfilled } = ctx.request.body;
     try {
-      await fulfilOrder(id, booksFulfilled);
+      const { orders_collection, warehouse_collection } = getBookDatabase();
+      await fulfilOrder(
+        id,
+        booksFulfilled,
+        orders_collection,
+        warehouse_collection
+      );
       ctx.status = 204;
     } catch (error) {
       console.error(error);

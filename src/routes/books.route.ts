@@ -6,6 +6,7 @@ import {
   bookInputSchema,
   bookSchema,
 } from '../../adapter/assignment-4';
+import { getBookDatabase } from '../db';
 import {
   createBook,
   deleteBook,
@@ -41,7 +42,12 @@ booksRouter.get({
   handler: async (ctx) => {
     const { filters } = ctx.request.query;
     try {
-      const books = await listBooks(filters);
+      const { book_collection, warehouse_collection } = getBookDatabase();
+      const books = await listBooks(
+        filters,
+        book_collection,
+        warehouse_collection
+      );
       ctx.body = books;
     } catch (error) {
       ctx.status = 500;
@@ -65,7 +71,8 @@ booksRouter.get({
   handler: async (ctx) => {
     const { id } = ctx.request.params;
     try {
-      const book = await getBookById(id);
+      const { book_collection, warehouse_collection } = getBookDatabase();
+      const book = await getBookById(id, book_collection, warehouse_collection);
       ctx.body = book;
     } catch (error) {
       if (error instanceof Error && error.message === 'Book not found') {
@@ -89,7 +96,8 @@ booksRouter.post({
   handler: async (ctx) => {
     const { body } = ctx.request;
     try {
-      const newBook = await createBook(body);
+      const { book_collection } = getBookDatabase();
+      const newBook = await createBook(body, book_collection);
       ctx.status = 201;
       ctx.body = newBook;
     } catch (error) {
@@ -114,8 +122,13 @@ booksRouter.put({
   handler: async (ctx) => {
     const { params, body } = ctx.request;
     try {
-      const updatedBook = await updateBook(params.id, body);
-
+      const { book_collection, warehouse_collection } = getBookDatabase();
+      const updatedBook = await updateBook(
+        params.id,
+        body,
+        book_collection,
+        warehouse_collection
+      );
       ctx.body = updatedBook;
     } catch (error) {
       if (error instanceof Error && error.message === 'Book not found') {
@@ -145,8 +158,9 @@ booksRouter.delete({
   name: 'deleteBook',
   handler: async (ctx) => {
     const { params } = ctx.request;
+    const { book_collection } = getBookDatabase();
     try {
-      await deleteBook(params.id);
+      await deleteBook(params.id, book_collection);
 
       ctx.status = 204;
     } catch (error) {

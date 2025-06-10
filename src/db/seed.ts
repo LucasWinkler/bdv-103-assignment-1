@@ -13,9 +13,11 @@ export async function seedDb(databaseAccessor?: BookDatabaseAccessor) {
     await database.dropDatabase();
 
     console.log('Inserting collections');
-    await book_collection.insertMany(books);
+    const bookResults = await book_collection.insertMany(books);
 
     console.log('Seeding completed successfully');
+
+    return { databaseAccessor, books: bookResults.insertedIds };
   } catch (error) {
     console.error('Error during seeding:', error);
     throw error;

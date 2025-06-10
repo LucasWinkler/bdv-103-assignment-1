@@ -12,7 +12,7 @@ export const bookInputSchema = z.object({
 
 export const bookSchema = bookInputSchema.extend({
   id: z.string(),
-  stock: z.number(),
+  stock: z.number().default(0).optional(),
 });
 
 export const bookFilterSchema = z
@@ -41,7 +41,7 @@ export const warehouseBookSchema = z.object({
 export type WarehouseBook = z.infer<typeof warehouseBookSchema>;
 
 export const orderSchema = z.object({
-  id: z.string(),
+  _id: z.string(),
   books: z.record(z.string(), z.number()),
   fulfilled: z.boolean().optional(),
 });
@@ -90,7 +90,7 @@ async function placeBooksOnShelf(
 
 async function orderBooks(
   order: Book['id'][]
-): Promise<{ orderId: Order['id'] }> {
+): Promise<{ orderId: Order['_id'] }> {
   const response = await fetch('http://localhost:3000/orders', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -99,7 +99,7 @@ async function orderBooks(
   if (!response.ok) {
     throw new Error(`Failed to place order`);
   }
-  return (await response.json()) as { orderId: Order['id'] };
+  return (await response.json()) as { orderId: Order['_id'] };
 }
 
 async function findBookOnShelf(book: Book['id']): Promise<Array<BookOnShelf>> {
@@ -113,7 +113,7 @@ async function findBookOnShelf(book: Book['id']): Promise<Array<BookOnShelf>> {
 }
 
 async function fulfilOrder(
-  order: Order['id'],
+  order: Order['_id'],
   booksFulfilled: Array<{
     book: Book['id'];
     shelf: WarehouseBook['shelf'];
@@ -132,14 +132,14 @@ async function fulfilOrder(
 }
 
 async function listOrders(): Promise<
-  Array<{ orderId: Order['id']; books: Record<Book['id'], number> }>
+  Array<{ orderId: Order['_id']; books: Record<Book['id'], number> }>
 > {
   const response = await fetch('http://localhost:3000/orders');
   if (!response.ok) {
     throw new Error(`Failed to list orders: ${response.statusText}`);
   }
   return (await response.json()) as Array<{
-    orderId: Order['id'];
+    orderId: Order['_id'];
     books: Record<Book['id'], number>;
   }>;
 }
