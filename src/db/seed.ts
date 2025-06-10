@@ -7,10 +7,10 @@ export async function seedDb(databaseAccessor?: BookDatabaseAccessor) {
   console.log('Starting seeding');
 
   try {
-    const { book_collection } = databaseAccessor ?? getBookDatabase();
+    const { database, book_collection } = databaseAccessor ?? getBookDatabase();
 
     console.log('Deleting collections');
-    await book_collection.deleteMany({});
+    await database.dropDatabase();
 
     console.log('Inserting collections');
     await book_collection.insertMany(books);

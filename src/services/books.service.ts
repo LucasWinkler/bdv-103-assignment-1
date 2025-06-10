@@ -1,12 +1,12 @@
-import { Collection, Filter, ObjectId } from 'mongodb';
+import { Filter, ObjectId } from 'mongodb';
 
-import { Book, BookFilter } from '../../adapter/assignment-4';
+import { Book, BookFilter, BookInput } from '../../adapter/assignment-4';
+import { getBookDatabase } from '../db';
+import { getAllBookStocks, getBookStock } from './warehouse.service';
 
-export async function listBooks(
-  filters: BookFilter,
-  bookCollection: Collection<Book>
-): Promise<Book[]> {
-  const query: Filter<Book> =
+export async function listBooks(filters: BookFilter): Promise<Book[]> {
+  const { book_collection } = getBookDatabase();
+  const query: Filter<BookInput> =
     filters && filters.length > 0
       ? {
           $or: filters.map((filter) => {
@@ -41,7 +41,8 @@ export async function listBooks(
         }
       : {};
 
-  const books = await bookCollection.find(query).toArray();
+  const books = await book_collection.find(query).toArray();
+  const stocks = await getAllBookStocks();
 
   return books.map((book) => ({
     id: book._id.toString(),
@@ -50,50 +51,74 @@ export async function listBooks(
     description: book.description,
     price: book.price,
     image: book.image,
+    stock: stocks[book._id.toString()] || 0,
   }));
 }
 
-export async function createBook(
-  book: Omit<Book, 'id'>,
-  bookCollection: Collection<Book>
-): Promise<Book> {
-  const result = await bookCollection.insertOne({
-    ...book,
-    id: new ObjectId().toString(),
-  });
-  return { ...book, id: result.insertedId.toString() };
+export async function getBookById(id: string): Promise<Book> {
+  const { book_collection } = getBookDatabase();
+
+  const book = await book_collection.findOne({ _id: new ObjectId(id) });
+  if (!book) {
+    throw new Error('Book not found');
+  }
+
+  const stock = await getBookStock(id);
+  return {
+    id: book._id.toString(),
+    name: book.name,
+    author: book.author,
+    description: book.description,
+    price: book.price,
+    image: book.image,
+    stock,
+  };
+}
+
+export async function createBook(book: BookInput): Promise<Book> {
+  const { book_collection } = getBookDatabase();
+  const result = await book_collection.insertOne({ ...book });
+  return { ...book, id: result.insertedId.toString(), stock: 0 };
 }
 
 export async function updateBook(
   id: string,
-  updates: Partial<Omit<Book, 'id'>>,
-  bookCollection: Collection<Book>
+  updates: Partial<BookInput>
 ): Promise<Book> {
-  const result = await bookCollection.findOneAndUpdate(
+  const { book_collection } = getBookDatabase();
+  const mongoResult = await book_collection.findOneAndUpdate(
     { _id: new ObjectId(id) },
     { $set: updates },
-    { includeResultMetadata: true }
+    { returnDocument: 'after' }
   );
 
-  if (!result.value) {
+  const value =
+    mongoResult && 'value' in mongoResult
+      ? (mongoResult as { value?: (BookInput & { _id: ObjectId }) | null })
+          .value
+      : null;
+
+  if (!value) {
     throw new Error('Book not found');
   }
 
+  const stock = await getBookStock(id);
+
   return {
-    id: result.value._id.toString(),
-    name: result.value.name,
-    author: result.value.author,
-    description: result.value.description,
-    price: result.value.price,
-    image: result.value.image,
+    id: value._id.toString(),
+    name: value.name,
+    author: value.author,
+    description: value.description,
+    price: value.price,
+    image: value.image,
+    stock,
   };
 }
 
-export async function deleteBook(
-  id: string,
-  bookCollection: Collection<Book>
-): Promise<number> {
-  const result = await bookCollection.deleteOne({ _id: new ObjectId(id) });
+export async function deleteBook(id: string): Promise<number> {
+  const { book_collection } = getBookDatabase();
+
+  const result = await book_collection.deleteOne({ _id: new ObjectId(id) });
   if (result.deletedCount === 0) {
     throw new Error('Book not found');
   }

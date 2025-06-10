@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Collection, Db, MongoClient } from 'mongodb';
 
-import type { Book, Order, WarehouseBook } from '../../adapter/assignment-4';
+import type {
+  BookInput,
+  Order,
+  WarehouseBook,
+} from '../../adapter/assignment-4';
 
 export let client: MongoClient;
 
@@ -15,7 +19,7 @@ function initializeClient(uri: string): MongoClient {
 
 export interface BookDatabaseAccessor {
   database: Db;
-  book_collection: Collection<Book>;
+  book_collection: Collection<BookInput>;
   warehouse_collection: Collection<WarehouseBook>;
   orders_collection: Collection<Order>;
 }
@@ -30,7 +34,7 @@ export function getBookDatabase(): BookDatabaseAccessor {
       : 'bdv-103-bookstore';
 
   const database = mongoClient.db(dbName);
-  const book_collection = database.collection<Book>('books');
+  const book_collection = database.collection<BookInput>('books');
   const warehouse_collection = database.collection<WarehouseBook>('warehouse');
   const orders_collection = database.collection<Order>('orders');
 

@@ -1,15 +1,18 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import z from 'zod';
 
 import previous_assignment from './assignment-3';
 
-export const bookSchema = z.object({
-  id: z.string(),
+export const bookInputSchema = z.object({
   name: z.string(),
   author: z.string(),
   description: z.string(),
   price: z.number(),
   image: z.string(),
+});
+
+export const bookSchema = bookInputSchema.extend({
+  id: z.string(),
+  stock: z.number(),
 });
 
 export const bookFilterSchema = z
@@ -25,12 +28,13 @@ export const bookFilterSchema = z
   )
   .optional();
 
+export type BookInput = z.infer<typeof bookInputSchema>;
 export type Book = z.infer<typeof bookSchema>;
 export type BookFilter = z.infer<typeof bookFilterSchema>;
 
 export const warehouseBookSchema = z.object({
   bookId: z.string(),
-  shelfId: z.string(),
+  shelf: z.string(),
   quantity: z.number(),
 });
 
@@ -39,13 +43,18 @@ export type WarehouseBook = z.infer<typeof warehouseBookSchema>;
 export const orderSchema = z.object({
   id: z.string(),
   books: z.record(z.string(), z.number()),
+  fulfilled: z.boolean().optional(),
 });
 
 export type Order = z.infer<typeof orderSchema>;
 
+type BookOnShelf = {
+  shelf: WarehouseBook['shelf'];
+  quantity: number;
+};
+
 async function listBooks(filters?: BookFilter): Promise<Book[]> {
-  const books = await previous_assignment.listBooks(filters);
-  return books;
+  return (await previous_assignment.listBooks(filters)) as Book[];
 }
 
 async function createOrUpdateBook(book: Book): Promise<Book['id']> {
@@ -57,45 +66,82 @@ async function removeBook(book: Book['id']): Promise<void> {
 }
 
 async function lookupBookById(book: Book['id']): Promise<Book> {
-  // TODO: Implement. This needs to hit an api route similar to that of the previous assignment. We need to get the book from the database and include the stock count.
-  throw new Error('Todo');
+  const response = await fetch(`http://localhost:3000/books/${book}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch book: ${response.statusText}`);
+  }
+  return (await response.json()) as Book;
 }
 
 async function placeBooksOnShelf(
   bookId: Book['id'],
   numberOfBooks: number,
-  shelfId: WarehouseBook['shelfId']
+  shelf: WarehouseBook['shelf']
 ): Promise<void> {
-  throw new Error('Todo');
+  const response = await fetch('http://localhost:3000/warehouse/place', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bookId, shelf, numberOfBooks }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to place on shelf`);
+  }
 }
 
 async function orderBooks(
   order: Book['id'][]
 ): Promise<{ orderId: Order['id'] }> {
-  throw new Error('Todo');
+  const response = await fetch('http://localhost:3000/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bookIds: order }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to place order`);
+  }
+  return (await response.json()) as { orderId: Order['id'] };
 }
 
-async function findBookOnShelf(
-  book: Book['id']
-): Promise<Array<{ shelfId: WarehouseBook['shelfId']; quantity: number }>> {
-  throw new Error('Todo');
+async function findBookOnShelf(book: Book['id']): Promise<Array<BookOnShelf>> {
+  const response = await fetch(
+    `http://localhost:3000/warehouse/shelves/${book}`
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to find book on shelf: ${response.statusText}`);
+  }
+  return (await response.json()) as Array<BookOnShelf>;
 }
 
 async function fulfilOrder(
   order: Order['id'],
   booksFulfilled: Array<{
     book: Book['id'];
-    shelfId: WarehouseBook['shelfId'];
+    shelf: WarehouseBook['shelf'];
     numberOfBooks: number;
   }>
 ): Promise<void> {
-  throw new Error('Todo');
+  const response = await fetch(`http://localhost:3000/orders/${order}/fulfil`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ booksFulfilled }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
 }
 
 async function listOrders(): Promise<
   Array<{ orderId: Order['id']; books: Record<Book['id'], number> }>
 > {
-  throw new Error('Todo');
+  const response = await fetch('http://localhost:3000/orders');
+  if (!response.ok) {
+    throw new Error(`Failed to list orders: ${response.statusText}`);
+  }
+  return (await response.json()) as Array<{
+    orderId: Order['id'];
+    books: Record<Book['id'], number>;
+  }>;
 }
 
 const assignment = 'assignment-4';
