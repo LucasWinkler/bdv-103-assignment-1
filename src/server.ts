@@ -22,11 +22,13 @@ app.use(
   })
 );
 app.use(bodyParser());
+
+// Old routes
 app.use(zodRouter.routes());
 app.use(zodRouter.allowedMethods());
 
+// New routes
 RegisterRoutes(koaRouter);
-
 app.use(koaRouter.routes());
 app.use(koaRouter.allowedMethods());
 
