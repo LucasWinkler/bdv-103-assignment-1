@@ -7,7 +7,7 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   eslintPluginPrettierRecommended,
   {
-    ignores: ['node_modules', '.prettierignore', 'build'],
+    ignores: ['node_modules', '.prettierignore', 'build', 'client'],
     rules: {
       '@typescript-eslint/no-unused-vars': 'error',
       'import/order': 'off', // Conflicts with prettier import order plugin

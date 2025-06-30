@@ -5,10 +5,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start-server": "tsx src/server.ts",
-    "lint": "eslint .",
+    "start-server": "./generate-sdk.sh && tsx src/server.ts",
+    "lint": "./generate-sdk.sh && eslint .",
     "format": "prettier --write .",
-    "type-check": "tsc --noEmit",
+    "type-check": "./generate-sdk.sh && tsc --noEmit",
     "validate": "npm run type-check && npm run lint && prettier --check .",
     "prepare": "husky",
     "test": "vitest",
