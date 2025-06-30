@@ -6,7 +6,8 @@
   "dockerComposeFile": ["docker-compose.yml"],
   "service": "dev",
   "features": {
-    "ghcr.io/mcmastercce/bvd-103-mcmasterful-books/mcmasterful-books:latest": {}
+    "ghcr.io/mcmastercce/bvd-103-mcmasterful-books/mcmasterful-books:latest": {},
+    "ghcr.io/devcontainers/features/java": {}
   },
 
   // Features to add to the dev container. More info: https://containers.dev/features.
