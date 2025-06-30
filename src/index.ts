@@ -1,4 +1,4 @@
-import { createServer } from './serverLauncher';
+import { createServer } from './server';
 
 const PORT = Number(process.env.PORT) || 3000;
 

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach } from 'vitest';
 
-import { createServer } from '../src/serverLauncher';
+import { createServer } from '../src/server';
 
 import type { Server } from 'http';
 
