@@ -79,3 +79,29 @@ jobs:
 
       - name: Run tests
         run: npm run test:ci
+
+  generate-client:
+    name: Generate Client SDK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate client SDK
+        run: chmod +x ./generate-sdk.sh && ./generate-sdk.sh
+
+      - name: Upload client SDK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-client-sdk
+          path: ./client
+          retention-days: 30
