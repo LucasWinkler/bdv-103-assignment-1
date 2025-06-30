@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start-server": "./generate-sdk.sh && tsx src/server.ts",
+    "start-server": "./generate-sdk.sh && tsx src/index.ts",
     "lint": "./generate-sdk.sh && eslint .",
     "format": "prettier --write .",
     "type-check": "./generate-sdk.sh && tsc --noEmit",
