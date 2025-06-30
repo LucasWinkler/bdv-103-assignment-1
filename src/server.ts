@@ -1,12 +1,18 @@
 import cors from '@koa/cors';
+import KoaRouter from '@koa/router';
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import logger from 'koa-logger';
 import qs from 'koa-qs';
+import { koaSwagger } from 'koa2-swagger-ui';
 
-import router from './routes';
+import { RegisterRoutes } from '../build/routes';
+import swagger from '../build/swagger.json';
+import zodRouter from './routes';
 
 const app = new Koa();
+const koaRouter = new KoaRouter();
+
 qs(app);
 
 app.use(logger());
@@ -16,9 +22,22 @@ app.use(
   })
 );
 app.use(bodyParser());
+app.use(zodRouter.routes());
+app.use(zodRouter.allowedMethods());
 
-app.use(router.routes());
-app.use(router.allowedMethods());
+RegisterRoutes(koaRouter);
+
+app.use(koaRouter.routes());
+app.use(koaRouter.allowedMethods());
+
+app.use(
+  koaSwagger({
+    routePrefix: '/docs',
+    specPrefix: '/docs/spec',
+    exposeSpec: true,
+    swaggerOptions: { spec: swagger },
+  })
+);
 
 const PORT = 3000;
 

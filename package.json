@@ -1,7 +1,7 @@
 {
-  "name": "assignment-1",
+  "name": "assignment-5",
   "version": "1.0.0",
-  "description": "This is a template repository for the first assignment in BVD 103 at McMaster Continuing Education.",
+  "description": "This is a template repository for the first assignment in BVD 103 at McMaster Continuing Education and I am now on the 5th assignment.",
   "main": "index.js",
   "type": "module",
   "scripts": {
