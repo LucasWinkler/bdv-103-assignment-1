@@ -24,16 +24,13 @@ export interface BookDatabaseAccessor {
   orders_collection: Collection<Order>;
 }
 
-export function getBookDatabase(): BookDatabaseAccessor {
+export function getBookDatabase(dbName?: string): BookDatabaseAccessor {
   const uri = ((global as any).MONGO_URI as string) ?? 'mongodb://mongo';
   const mongoClient = initializeClient(uri);
 
-  const dbName =
-    (global as any).MONGO_URI !== undefined
-      ? Math.floor(Math.random() * 100000).toPrecision()
-      : 'bdv-103-bookstore';
-
-  const database = mongoClient.db(dbName);
+  const database = mongoClient.db(
+    dbName ?? Math.floor(Math.random() * 100000).toPrecision()
+  );
   const book_collection = database.collection<BookInput>('books');
   const warehouse_collection = database.collection<WarehouseBook>('warehouse');
   const orders_collection = database.collection<Order>('orders');
