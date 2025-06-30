@@ -1,6 +1,9 @@
 import { defineConfig } from 'vitest/config';
 
+import generateSdkPlugin from './generate-sdk-plugin';
+
 export default defineConfig({
+  plugins: [generateSdkPlugin],
   test: {
     includeSource: ['src/**/*.ts'],
     setupFiles: ['src/tests/setup.ts'],
