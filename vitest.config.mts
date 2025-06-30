@@ -13,4 +13,9 @@ export default defineConfig({
   define: {
     'import.meta.vitest': 'undefined',
   },
+  server: {
+    watch: {
+      ignored: ['build/**', 'client/**'],
+    },
+  },
 });
