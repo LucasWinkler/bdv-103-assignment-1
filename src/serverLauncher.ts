@@ -1,5 +1,3 @@
-import { Server } from 'http';
-
 import cors from '@koa/cors';
 import KoaRouter from '@koa/router';
 import Koa from 'koa';
@@ -11,6 +9,8 @@ import { koaSwagger } from 'koa2-swagger-ui';
 import { RegisterRoutes } from '../build/routes';
 import swagger from '../build/swagger.json';
 import zodRouter from './routes';
+
+import type { Server } from 'http';
 
 export function createServer(port: number = 0): Server {
   const app = new Koa();

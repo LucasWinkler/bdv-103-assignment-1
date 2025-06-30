@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [generateSdkPlugin],
   test: {
     includeSource: ['src/**/*.ts'],
-    setupFiles: ['src/tests/setup.ts'],
+    setupFiles: ['tests/setup.ts'],
     globals: true,
     hookTimeout: 30000,
   },

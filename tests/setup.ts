@@ -2,7 +2,7 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { afterAll, beforeAll } from 'vitest';
 
-import { client, getBookDatabase } from '../db';
+import { client, getBookDatabase } from '../src/db';
 
 beforeAll(async () => {
   const instance = await MongoMemoryServer.create({
