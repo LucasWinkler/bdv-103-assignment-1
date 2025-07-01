@@ -1,49 +1,57 @@
-import { BookDatabaseAccessor } from '../db';
+import { Book, BookFilter, BookInput } from '../../adapter/assignment-4';
+import { BookDatabaseAccessor } from '../db/books';
+import { WarehouseDatabaseAccessor } from '../db/warehouse';
 import * as booksService from '../services/books.service';
 
 export interface BooksData {
-  listBooks: typeof booksService.listBooks;
-  getBookById: typeof booksService.getBookById;
-  createBook: typeof booksService.createBook;
-  updateBook: typeof booksService.updateBook;
-  deleteBook: typeof booksService.deleteBook;
+  listBooks: (filters: BookFilter) => Promise<Book[]>;
+  getBookById: (id: string) => Promise<Book>;
+  createBook: (book: BookInput) => Promise<Book>;
+  updateBook: (id: string, updates: Partial<BookInput>) => Promise<Book>;
+  deleteBook: (id: string) => Promise<number>;
 }
 
-export function createBooksData(accessor: BookDatabaseAccessor): BooksData {
+export function createBooksData(
+  bookAccessor: BookDatabaseAccessor,
+  warehouseAccessor: WarehouseDatabaseAccessor
+): BooksData {
   return {
     listBooks: (filters) =>
       booksService.listBooks(
         filters,
-        accessor.book_collection,
-        accessor.warehouse_collection
+        bookAccessor.book_collection,
+        warehouseAccessor.warehouse_collection
       ),
 
     getBookById: (id) =>
       booksService.getBookById(
         id,
-        accessor.book_collection,
-        accessor.warehouse_collection
+        bookAccessor.book_collection,
+        warehouseAccessor.warehouse_collection
       ),
 
     createBook: (book) =>
-      booksService.createBook(book, accessor.book_collection),
+      booksService.createBook(book, bookAccessor.book_collection),
 
     updateBook: (id, updates) =>
       booksService.updateBook(
         id,
         updates,
-        accessor.book_collection,
-        accessor.warehouse_collection
+        bookAccessor.book_collection,
+        warehouseAccessor.warehouse_collection
       ),
 
-    deleteBook: (id) => booksService.deleteBook(id, accessor.book_collection),
+    deleteBook: (id) =>
+      booksService.deleteBook(id, bookAccessor.book_collection),
   };
 }
 
 export async function getDefaultBooksDatabase(
   name?: string
 ): Promise<BooksData> {
-  const { getBookDatabase } = await import('../db');
-  const db = getBookDatabase(name);
-  return createBooksData(db);
+  const { getBookDatabase } = await import('../db/books');
+  const { getWarehouseDatabase } = await import('../db/warehouse');
+  const warehouseAccessor = getWarehouseDatabase(name);
+  const bookAccessor = getBookDatabase(name);
+  return createBooksData(bookAccessor, warehouseAccessor);
 }

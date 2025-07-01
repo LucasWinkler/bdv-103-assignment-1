@@ -1,8 +1,14 @@
 import { Collection, ObjectId } from 'mongodb';
 
 import { Order, WarehouseBook } from '../../adapter/assignment-4';
-import { BookDatabaseAccessor, cleanupDatabase, getBookDatabase } from '../db';
+import { cleanupDatabase } from '../db';
+import { BookDatabaseAccessor, getBookDatabase } from '../db/books';
+import { getOrdersDatabase, OrdersDatabaseAccessor } from '../db/orders';
 import { seedDb } from '../db/seed';
+import {
+  getWarehouseDatabase,
+  WarehouseDatabaseAccessor,
+} from '../db/warehouse';
 
 export async function orderBooks(
   bookIds: string[],
@@ -86,23 +92,27 @@ export async function fulfilOrder(
 
 if (import.meta.vitest !== undefined) {
   const { describe, it, expect, beforeEach, afterAll } = import.meta.vitest;
-  let bookDatabase: BookDatabaseAccessor;
+  let bookAccessor: BookDatabaseAccessor;
+  let ordersAccessor: OrdersDatabaseAccessor;
+  let warehouseAccessor: WarehouseDatabaseAccessor;
   let seededBooks: Record<string, ObjectId>;
 
   describe('orders service', () => {
     beforeEach(async () => {
-      bookDatabase = getBookDatabase();
-      const { books } = await seedDb(bookDatabase);
+      bookAccessor = getBookDatabase();
+      ordersAccessor = getOrdersDatabase();
+      warehouseAccessor = getWarehouseDatabase();
+      const { books } = await seedDb(bookAccessor);
       seededBooks = books;
     });
 
     afterAll(async () => {
-      await cleanupDatabase(bookDatabase);
+      await cleanupDatabase(bookAccessor.database);
     });
 
     describe('orderBooks', () => {
       it('creates an order with correct book quantities', async () => {
-        const { orders_collection } = bookDatabase;
+        const { orders_collection } = ordersAccessor;
         const bookIds = [
           seededBooks[0].toString(),
           seededBooks[0].toString(),
@@ -124,7 +134,8 @@ if (import.meta.vitest !== undefined) {
 
     describe('fulfilOrder', () => {
       it('successfully fulfills an order when stock is available', async () => {
-        const { orders_collection, warehouse_collection } = bookDatabase;
+        const { orders_collection } = ordersAccessor;
+        const { warehouse_collection } = warehouseAccessor;
         const bookId = seededBooks[0].toString();
 
         const { orderId } = await orderBooks([bookId], orders_collection);
@@ -147,7 +158,8 @@ if (import.meta.vitest !== undefined) {
       });
 
       it('throws error when trying to fulfill order with insufficient stock', async () => {
-        const { orders_collection, warehouse_collection } = bookDatabase;
+        const { orders_collection } = ordersAccessor;
+        const { warehouse_collection } = warehouseAccessor;
         const bookId = seededBooks[1].toString();
 
         const { orderId } = await orderBooks([bookId], orders_collection);
@@ -163,7 +175,8 @@ if (import.meta.vitest !== undefined) {
       });
 
       it('throws error when fulfilled quantity does not match order', async () => {
-        const { orders_collection, warehouse_collection } = bookDatabase;
+        const { orders_collection } = ordersAccessor;
+        const { warehouse_collection } = warehouseAccessor;
         const bookId = seededBooks[0].toString();
 
         const { orderId } = await orderBooks(
@@ -182,7 +195,8 @@ if (import.meta.vitest !== undefined) {
       });
 
       it('throws error when order is already fulfilled', async () => {
-        const { orders_collection, warehouse_collection } = bookDatabase;
+        const { orders_collection } = ordersAccessor;
+        const { warehouse_collection } = warehouseAccessor;
         const bookId = seededBooks[0].toString();
 
         const { orderId } = await orderBooks([bookId], orders_collection);
@@ -211,7 +225,8 @@ if (import.meta.vitest !== undefined) {
       });
 
       it('throws error when order is not found', async () => {
-        const { orders_collection, warehouse_collection } = bookDatabase;
+        const { orders_collection } = ordersAccessor;
+        const { warehouse_collection } = warehouseAccessor;
         const nonExistentOrderId = new ObjectId().toString();
 
         await expect(

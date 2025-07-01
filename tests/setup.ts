@@ -2,8 +2,6 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { afterAll, beforeAll } from 'vitest';
 
-import { client, getBookDatabase } from '../src/db';
-
 beforeAll(async () => {
   const instance = await MongoMemoryServer.create({
     binary: { version: '7.0.7' },
@@ -16,18 +14,9 @@ beforeAll(async () => {
   const uri = instance.getUri();
   (global as any).__MONGOINSTANCE = instance;
   (global as any).MONGO_URI = uri.slice(0, uri.lastIndexOf('/'));
-
-  getBookDatabase();
 });
 
 afterAll(async () => {
   const instance = (global as any).__MONGOINSTANCE as MongoMemoryServer;
-
-  if (client) {
-    await client.close();
-  }
-
-  if (instance) {
-    await instance.stop({ doCleanup: true });
-  }
+  await instance.stop({ doCleanup: true });
 });

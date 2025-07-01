@@ -1,13 +1,7 @@
 import zodRouter from 'koa-zod-router';
 import { z } from 'zod';
 
-import { getBookDatabase } from '../db';
-import {
-  findBookOnShelf,
-  getAllBookStocks,
-  getBookStock,
-  placeBooksOnShelf,
-} from '../services/warehouse.service';
+import { getDefaultWarehouseDatabase } from '../data/warehouse.data';
 
 const warehouseRouter = zodRouter({
   zodRouter: {
@@ -37,8 +31,8 @@ warehouseRouter.get({
     const { bookId } = ctx.request.params;
 
     try {
-      const { warehouse_collection } = getBookDatabase();
-      const stock = await getBookStock(bookId, warehouse_collection);
+      const { getBookStock } = await getDefaultWarehouseDatabase();
+      const stock = await getBookStock(bookId);
       ctx.body = { bookId, stock };
     } catch (error) {
       console.error(error);
@@ -56,8 +50,8 @@ warehouseRouter.get({
   name: 'getAllBookStocks',
   handler: async (ctx) => {
     try {
-      const { warehouse_collection } = getBookDatabase();
-      const stocks = await getAllBookStocks(warehouse_collection);
+      const { getAllBookStocks } = await getDefaultWarehouseDatabase();
+      const stocks = await getAllBookStocks();
       ctx.body = stocks;
     } catch (error) {
       console.error(error);
@@ -75,13 +69,8 @@ warehouseRouter.post({
   handler: async (ctx) => {
     const { bookId, shelf, numberOfBooks } = ctx.request.body;
     try {
-      const { warehouse_collection } = getBookDatabase();
-      await placeBooksOnShelf(
-        bookId,
-        shelf,
-        numberOfBooks,
-        warehouse_collection
-      );
+      const { placeBooksOnShelf } = await getDefaultWarehouseDatabase();
+      await placeBooksOnShelf(bookId, shelf, numberOfBooks);
       ctx.status = 204;
     } catch (error) {
       console.error(error);
@@ -104,8 +93,8 @@ warehouseRouter.get({
   handler: async (ctx) => {
     const { bookId } = ctx.request.params;
     try {
-      const { warehouse_collection } = getBookDatabase();
-      const shelves = await findBookOnShelf(bookId, warehouse_collection);
+      const { findBookOnShelf } = await getDefaultWarehouseDatabase();
+      const shelves = await findBookOnShelf(bookId);
       ctx.body = shelves;
     } catch (error) {
       console.error(error);

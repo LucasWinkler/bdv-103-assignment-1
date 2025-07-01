@@ -1,15 +1,21 @@
-import { BookDatabaseAccessor } from '../db';
+import { WarehouseDatabaseAccessor } from '../db/warehouse';
 import * as warehouseService from '../services/warehouse.service';
 
 export interface WarehouseData {
-  getBookStock: typeof warehouseService.getBookStock;
-  getAllBookStocks: typeof warehouseService.getAllBookStocks;
-  placeBooksOnShelf: typeof warehouseService.placeBooksOnShelf;
-  findBookOnShelf: typeof warehouseService.findBookOnShelf;
+  getBookStock: (bookId: string) => Promise<number>;
+  getAllBookStocks: () => Promise<Record<string, number>>;
+  placeBooksOnShelf: (
+    bookId: string,
+    shelf: string,
+    numberOfBooks: number
+  ) => Promise<void>;
+  findBookOnShelf: (
+    bookId: string
+  ) => Promise<Array<{ shelf: string; quantity: number }>>;
 }
 
 export function createWarehouseData(
-  accessor: BookDatabaseAccessor
+  accessor: WarehouseDatabaseAccessor
 ): WarehouseData {
   return {
     getBookStock: (bookId) =>
@@ -34,7 +40,7 @@ export function createWarehouseData(
 export async function getDefaultWarehouseDatabase(
   name?: string
 ): Promise<WarehouseData> {
-  const { getBookDatabase } = await import('../db');
-  const db = getBookDatabase(name);
-  return createWarehouseData(db);
+  const { getWarehouseDatabase } = await import('../db/warehouse');
+  const warehouseAccessor = getWarehouseDatabase(name);
+  return createWarehouseData(warehouseAccessor);
 }

@@ -6,8 +6,13 @@ import {
   BookInput,
   WarehouseBook,
 } from '../../adapter/assignment-4';
-import { BookDatabaseAccessor, cleanupDatabase, getBookDatabase } from '../db';
+import { cleanupDatabase } from '../db';
+import { BookDatabaseAccessor, getBookDatabase } from '../db/books';
 import { seedDb } from '../db/seed';
+import {
+  getWarehouseDatabase,
+  WarehouseDatabaseAccessor,
+} from '../db/warehouse';
 import { getAllBookStocks, getBookStock } from './warehouse.service';
 
 export async function listBooks(
@@ -137,26 +142,28 @@ export async function deleteBook(
 
 if (import.meta.vitest !== undefined) {
   const { describe, it, expect, beforeAll, afterAll } = import.meta.vitest;
-  let bookDatabase: BookDatabaseAccessor;
+  let bookAccessor: BookDatabaseAccessor;
+  let warehouseAccessor: WarehouseDatabaseAccessor;
   let seededBooks: Record<string, ObjectId>;
 
   describe('books service', () => {
     beforeAll(async () => {
-      bookDatabase = getBookDatabase();
-      const { books } = await seedDb(bookDatabase);
+      bookAccessor = getBookDatabase();
+      warehouseAccessor = getWarehouseDatabase();
+      const { books } = await seedDb(bookAccessor);
       seededBooks = books;
     });
 
     afterAll(async () => {
-      await cleanupDatabase(bookDatabase);
+      await cleanupDatabase(bookAccessor.database);
     });
 
     describe('listBooks', () => {
       it('returns all books with their stock levels', async () => {
         const books = await listBooks(
           [],
-          bookDatabase.book_collection,
-          bookDatabase.warehouse_collection
+          bookAccessor.book_collection,
+          warehouseAccessor.warehouse_collection
         );
         expect(books).toHaveLength(Object.keys(seededBooks).length);
         expect(books[0]).toMatchObject({
@@ -173,8 +180,8 @@ if (import.meta.vitest !== undefined) {
       it('filters books by price range', async () => {
         const books = await listBooks(
           [{ from: 10, to: 20 }],
-          bookDatabase.book_collection,
-          bookDatabase.warehouse_collection
+          bookAccessor.book_collection,
+          warehouseAccessor.warehouse_collection
         );
         books.forEach((book) => {
           expect(book.price).toBeGreaterThanOrEqual(10);
@@ -186,8 +193,8 @@ if (import.meta.vitest !== undefined) {
         const searchTerm = 'Book';
         const books = await listBooks(
           [{ name: searchTerm }],
-          bookDatabase.book_collection,
-          bookDatabase.warehouse_collection
+          bookAccessor.book_collection,
+          warehouseAccessor.warehouse_collection
         );
         books.forEach((book) => {
           expect(book.name.toLowerCase()).toContain(searchTerm.toLowerCase());
@@ -200,8 +207,8 @@ if (import.meta.vitest !== undefined) {
         const firstBookId = seededBooks[0].toString();
         const book = await getBookById(
           firstBookId,
-          bookDatabase.book_collection,
-          bookDatabase.warehouse_collection
+          bookAccessor.book_collection,
+          warehouseAccessor.warehouse_collection
         );
         expect(book).toMatchObject({
           id: firstBookId,
@@ -219,8 +226,8 @@ if (import.meta.vitest !== undefined) {
         await expect(
           getBookById(
             nonExistentId,
-            bookDatabase.book_collection,
-            bookDatabase.warehouse_collection
+            bookAccessor.book_collection,
+            warehouseAccessor.warehouse_collection
           )
         ).rejects.toThrow('Book not found');
       });
@@ -236,7 +243,7 @@ if (import.meta.vitest !== undefined) {
           image: 'Test Image',
         };
 
-        const book = await createBook(newBook, bookDatabase.book_collection);
+        const book = await createBook(newBook, bookAccessor.book_collection);
         expect(book).toMatchObject({
           ...newBook,
           id: expect.any(String),
@@ -259,8 +266,8 @@ if (import.meta.vitest !== undefined) {
         const book = await updateBook(
           firstBookId,
           updates,
-          bookDatabase.book_collection,
-          bookDatabase.warehouse_collection
+          bookAccessor.book_collection,
+          warehouseAccessor.warehouse_collection
         );
         expect(book).toMatchObject({
           id: firstBookId,
@@ -275,8 +282,8 @@ if (import.meta.vitest !== undefined) {
           updateBook(
             nonExistentId,
             { name: 'Updated' },
-            bookDatabase.book_collection,
-            bookDatabase.warehouse_collection
+            bookAccessor.book_collection,
+            warehouseAccessor.warehouse_collection
           )
         ).rejects.toThrow('Book not found');
       });
@@ -287,15 +294,15 @@ if (import.meta.vitest !== undefined) {
         const firstBookId = seededBooks[0].toString();
         const result = await deleteBook(
           firstBookId,
-          bookDatabase.book_collection
+          bookAccessor.book_collection
         );
         expect(result).toBe(1);
 
         await expect(
           getBookById(
             firstBookId,
-            bookDatabase.book_collection,
-            bookDatabase.warehouse_collection
+            bookAccessor.book_collection,
+            warehouseAccessor.warehouse_collection
           )
         ).rejects.toThrow('Book not found');
       });
@@ -303,7 +310,7 @@ if (import.meta.vitest !== undefined) {
       it('throws error when deleting non-existent book', async () => {
         const nonExistentId = new ObjectId().toString();
         await expect(
-          deleteBook(nonExistentId, bookDatabase.book_collection)
+          deleteBook(nonExistentId, bookAccessor.book_collection)
         ).rejects.toThrow('Book not found');
       });
     });

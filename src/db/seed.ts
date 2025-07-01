@@ -1,13 +1,14 @@
 import { fileURLToPath } from 'url';
 
-import { BookDatabaseAccessor, getBookDatabase } from '.';
-import { books } from './books';
+import { BookDatabaseAccessor, getBookDatabase } from './books';
+import { books } from './booksSeedData';
 
-export async function seedDb(databaseAccessor?: BookDatabaseAccessor) {
+export async function seedDb(bookAccessor?: BookDatabaseAccessor) {
   console.log('Starting seeding');
 
   try {
-    const { database, book_collection } = databaseAccessor ?? getBookDatabase();
+    const { database, book_collection } =
+      bookAccessor ?? getBookDatabase('bdv-103-books');
 
     console.log('Deleting collections');
     await database.dropDatabase();
@@ -17,7 +18,7 @@ export async function seedDb(databaseAccessor?: BookDatabaseAccessor) {
 
     console.log('Seeding completed successfully');
 
-    return { databaseAccessor, books: bookResults.insertedIds };
+    return { bookAccessor, books: bookResults.insertedIds };
   } catch (error) {
     console.error('Error during seeding:', error);
     throw error;

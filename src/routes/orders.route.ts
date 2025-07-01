@@ -1,12 +1,7 @@
 import zodRouter from 'koa-zod-router';
 import { z } from 'zod';
 
-import { getBookDatabase } from '../db';
-import {
-  fulfilOrder,
-  listOrders,
-  orderBooks,
-} from '../services/orders.service';
+import { getDefaultOrdersDatabase } from '../data/orders.data';
 
 const ordersRouter = zodRouter({
   zodRouter: {
@@ -35,8 +30,8 @@ ordersRouter.post({
   handler: async (ctx) => {
     const { bookIds } = ctx.request.body;
     try {
-      const { orders_collection } = getBookDatabase();
-      const result = await orderBooks(bookIds, orders_collection);
+      const { orderBooks } = await getDefaultOrdersDatabase();
+      const result = await orderBooks(bookIds);
       ctx.body = result;
     } catch (error) {
       console.error(error);
@@ -54,8 +49,8 @@ ordersRouter.get({
   name: 'listOrders',
   handler: async (ctx) => {
     try {
-      const { orders_collection } = getBookDatabase();
-      const orders = await listOrders(orders_collection);
+      const { listOrders } = await getDefaultOrdersDatabase();
+      const orders = await listOrders();
       ctx.body = orders;
     } catch (error) {
       console.error(error);
@@ -76,13 +71,8 @@ ordersRouter.post({
     const { id } = ctx.request.params;
     const { booksFulfilled } = ctx.request.body;
     try {
-      const { orders_collection, warehouse_collection } = getBookDatabase();
-      await fulfilOrder(
-        id,
-        booksFulfilled,
-        orders_collection,
-        warehouse_collection
-      );
+      const { fulfilOrder } = await getDefaultOrdersDatabase();
+      await fulfilOrder(id, booksFulfilled);
       ctx.status = 204;
     } catch (error) {
       console.error(error);

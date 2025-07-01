@@ -1,7 +1,11 @@
 import { Collection, ObjectId } from 'mongodb';
 
 import { WarehouseBook } from '../../adapter/assignment-4';
-import { BookDatabaseAccessor, cleanupDatabase, getBookDatabase } from '../db';
+import { cleanupDatabase } from '../db';
+import {
+  getWarehouseDatabase,
+  WarehouseDatabaseAccessor,
+} from '../db/warehouse';
 
 export async function getBookStock(
   bookId: string,
@@ -51,17 +55,17 @@ export async function findBookOnShelf(
 
 if (import.meta.vitest !== undefined) {
   const { describe, it, expect, afterAll, beforeEach } = import.meta.vitest;
-  let bookDatabase: BookDatabaseAccessor;
+  let warehouseAccessor: WarehouseDatabaseAccessor;
   let warehouse_collection: Collection<WarehouseBook>;
 
   describe('warehouse service', () => {
     beforeEach(async () => {
-      bookDatabase = getBookDatabase();
-      warehouse_collection = bookDatabase.warehouse_collection;
+      warehouseAccessor = getWarehouseDatabase();
+      warehouse_collection = warehouseAccessor.warehouse_collection;
     });
 
     afterAll(async () => {
-      await cleanupDatabase(bookDatabase);
+      await cleanupDatabase(warehouseAccessor.database);
     });
 
     describe('getBookStock', () => {
