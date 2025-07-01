@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitest/config';
 
-import generateSdkPlugin from './generate-sdk-plugin';
+import generateSdkPlugin from './vitest-openapi-plugin';
 
 export default defineConfig({
   plugins: [generateSdkPlugin],
