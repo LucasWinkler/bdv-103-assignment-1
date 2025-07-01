@@ -8,13 +8,37 @@ import { koaSwagger } from 'koa2-swagger-ui';
 
 import { RegisterRoutes } from '../build/routes';
 import swagger from '../build/swagger.json';
+import { getDefaultBooksDatabase } from './data/books.data';
+import { getDefaultOrdersDatabase } from './data/orders.data';
+import { getDefaultWarehouseDatabase } from './data/warehouse.data';
 import zodRouter from './routes';
+import { AppState } from './types/state';
 
 import type { Server } from 'http';
 
-export function createServer(port: number = 0): Server {
-  const app = new Koa();
+export async function createServer(
+  port: number = 0,
+  randomizeDbNames: boolean = false
+): Promise<{ server: Server; state: AppState }> {
+  const state: AppState = {
+    books: await getDefaultBooksDatabase(
+      getDbName(randomizeDbNames, 'bdv-103-books')
+    ),
+    warehouse: await getDefaultWarehouseDatabase(
+      getDbName(randomizeDbNames, 'bdv-103-warehouse')
+    ),
+    orders: await getDefaultOrdersDatabase(
+      getDbName(randomizeDbNames, 'bdv-103-orders')
+    ),
+  };
+
+  const app = new Koa<AppState, Koa.DefaultContext>();
   const koaRouter = new KoaRouter();
+
+  app.use(async (ctx, next): Promise<void> => {
+    ctx.state = state;
+    await next();
+  });
 
   qs(app);
 
@@ -52,5 +76,12 @@ export function createServer(port: number = 0): Server {
     console.log(`Server running on http://localhost:${actualPort}`);
   });
 
-  return server;
+  return { server, state };
+}
+
+function getDbName(
+  randomizeDbNames: boolean,
+  dbName: string
+): string | undefined {
+  return randomizeDbNames ? undefined : dbName;
 }

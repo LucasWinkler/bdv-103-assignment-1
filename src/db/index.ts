@@ -29,7 +29,10 @@ export function getBookDatabase(dbName?: string): BookDatabaseAccessor {
   const mongoClient = initializeClient(uri);
 
   const database = mongoClient.db(
-    dbName ?? Math.floor(Math.random() * 100000).toPrecision()
+    dbName ??
+      Math.floor(Math.random() * 100000)
+        .toPrecision()
+        .toString()
   );
   const book_collection = database.collection<BookInput>('books');
   const warehouse_collection = database.collection<WarehouseBook>('warehouse');
